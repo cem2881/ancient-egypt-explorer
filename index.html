@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Kayıp Firavun</title>
+<title>Kayıp Firavun v25.2</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;overflow:hidden;background:#dfb77f;font-family:Arial,sans-serif;touch-action:none}
@@ -20,9 +20,9 @@ canvas{display:block}
 </head>
 <body>
 <div id="hud">
-  <div id="title">KAYIP FİRAVUN</div>
-  <div>ANTİK MISIR • KEŞİF MODU</div>
-  <div id="status">Çölü keşfet</div>
+ <div id="title">KAYIP FİRAVUN</div>
+ <div>ANTİK MISIR • AÇIK DÜNYA</div>
+ <div id="status">Çölü keşfet</div>
 </div>
 <div id="lookArea"></div>
 <div id="joy"><div id="stick"></div></div>
@@ -30,42 +30,55 @@ canvas{display:block}
 <div id="error"></div>
 
 <script>
-window.addEventListener("error",e=>{
+function showError(message){
  const box=document.getElementById("error");
  box.style.display="block";
- box.textContent="Oyun hatası:\n"+(e.message||"Bilinmeyen hata");
-});
+ box.textContent="Oyun hatası:\n"+message;
+}
+window.addEventListener("error",e=>showError(e.message||"Bilinmeyen hata"));
+window.addEventListener("unhandledrejection",e=>showError(String(e.reason)));
 </script>
 
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
+// SAHNE
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0xe8c18c);
-scene.fog=new THREE.Fog(0xe8c18c,40,115);
+scene.fog=new THREE.Fog(0xe8c18c,45,130);
 
-const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,180);
+const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,200);
 camera.position.set(0,5,8);
 
-const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:"low-power"});
+const renderer=new THREE.WebGLRenderer({
+ antialias:false,
+ powerPreference:"low-power"
+});
 renderer.setPixelRatio(Math.min(devicePixelRatio,1));
 renderer.setSize(innerWidth,innerHeight);
 renderer.outputColorSpace=THREE.SRGBColorSpace;
 renderer.shadowMap.enabled=false;
 document.body.appendChild(renderer.domElement);
 
+// IŞIK
 scene.add(new THREE.HemisphereLight(0xffe8c7,0x765438,2));
 const sun=new THREE.DirectionalLight(0xffdca5,1.7);
 sun.position.set(-20,35,15);
 scene.add(sun);
 
-const material=(color)=>new THREE.MeshStandardMaterial({color,roughness:1});
+// MALZEMELER
+const material=color=>new THREE.MeshStandardMaterial({
+ color,
+ roughness:1
+});
+
 const sand=material(0xd9b176);
 const pale=material(0xe8c796);
 const stone=material(0xc4a174);
 const darkStone=material(0x876746);
 const green=material(0x426a37);
 const water=material(0x397d91);
+const oasisWater=material(0x438d91);
 const leather=material(0x593923);
 const leatherLight=material(0x805333);
 const cloth=material(0xc5aa7d);
@@ -74,7 +87,13 @@ const bronze=material(0x9d7137);
 const metal=material(0x9a9a8a);
 const skin=material(0x956747);
 const hood=material(0x49382c);
+const gold=material(0xc69a42);
+const houseMat=material(0xb99568);
+const roofMat=material(0x79563b);
+const awningMat=material(0x9b4930);
+const marketMat=material(0x795035);
 
+// ORTAK MODEL FONKSİYONU
 function mesh(geometry,mat,x,y,z,sx=1,sy=1,sz=1,parent=scene){
  const m=new THREE.Mesh(geometry,mat);
  m.position.set(x,y,z);
@@ -83,83 +102,91 @@ function mesh(geometry,mat,x,y,z,sx=1,sy=1,sz=1,parent=scene){
  return m;
 }
 
-// Çöl zemini
-const ground=mesh(new THREE.PlaneGeometry(220,220),sand,0,-.16,0);
+// ÇÖL
+const ground=mesh(new THREE.PlaneGeometry(240,240),sand,0,-.16,0);
 ground.rotation.x=-Math.PI/2;
 
-// Kum tepeleri
-for(let i=0;i<18;i++){
- const x=(Math.random()-.5)*145;
- const z=(Math.random()-.5)*145;
- mesh(new THREE.SphereGeometry(1,8,6),i%2?pale:stone,
- x,-.35,z,8+Math.random()*7,1,4+Math.random()*4);
+for(let i=0;i<24;i++){
+ const x=(Math.random()-.5)*170;
+ const z=(Math.random()-.5)*170;
+ mesh(new THREE.SphereGeometry(1,8,6),
+ i%2?pale:stone,x,-.35,z,
+ 8+Math.random()*7,1,4+Math.random()*4);
 }
 
-// Piramitler
+// PİRAMİTLER
 function pyramid(x,z,size){
- const p=mesh(new THREE.ConeGeometry(size,size*.88,4),stone,x,size*.44,z);
+ const p=mesh(new THREE.ConeGeometry(size,size*.88,4),
+ stone,x,size*.44,z);
  p.rotation.y=Math.PI/4;
- mesh(new THREE.BoxGeometry(size*1.45,.25,size*1.45),darkStone,x,.08,z);
+ mesh(new THREE.BoxGeometry(size*1.45,.25,size*1.45),
+ darkStone,x,.08,z);
 }
 pyramid(-16,-28,17);
 pyramid(-38,-45,10);
 pyramid(25,-48,12);
 
-// Tapınak
+// TAPINAK
 const temple=new THREE.Group();
 scene.add(temple);
-mesh(new THREE.BoxGeometry(17,1,12),darkStone,18,.5,-17,1,1,1,temple);
-mesh(new THREE.BoxGeometry(15,5,10),stone,18,3,-17,1,1,1,temple);
-mesh(new THREE.BoxGeometry(17,1,12),pale,18,5.7,-17,1,1,1,temple);
+
+mesh(new THREE.BoxGeometry(17,1,12),darkStone,
+ 18,.5,-17,1,1,1,temple);
+mesh(new THREE.BoxGeometry(15,5,10),stone,
+ 18,3,-17,1,1,1,temple);
+mesh(new THREE.BoxGeometry(17,1,12),pale,
+ 18,5.7,-17,1,1,1,temple);
+
 for(let x=12;x<=24;x+=3){
- mesh(new THREE.CylinderGeometry(.65,.8,4.5,8),pale,x,3,-11,1,1,1,temple);
- mesh(new THREE.CylinderGeometry(.9,.9,.3,8),bronze,x,5.2,-11,1,1,1,temple);
+ mesh(new THREE.CylinderGeometry(.65,.8,4.5,8),
+ pale,x,3,-11,1,1,1,temple);
+ mesh(new THREE.CylinderGeometry(.9,.9,.3,8),
+ bronze,x,5.2,-11,1,1,1,temple);
 }
 
-// Nil Nehri
-const river=mesh(new THREE.PlaneGeometry(15,110),water,-50,.01,-10);
+// NİL NEHRİ
+const river=mesh(new THREE.PlaneGeometry(15,110),
+ water,-50,.01,-10);
 river.rotation.x=-Math.PI/2;
 river.rotation.z=-.18;
 
-// Palmiye ağaçları
+// PALMİYE
 function palm(x,z){
  const g=new THREE.Group();
  scene.add(g);
  g.position.set(x,0,z);
- mesh(new THREE.CylinderGeometry(.2,.38,5,7),darkStone,0,2.5,0,1,1,1,g);
+
+ mesh(new THREE.CylinderGeometry(.2,.38,5,7),
+ darkStone,0,2.5,0,1,1,1,g);
+
  for(let i=0;i<7;i++){
   const a=i*Math.PI*2/7;
-  const leaf=mesh(new THREE.ConeGeometry(.48,4,5),green,
-  Math.cos(a)*1.3,5,Math.sin(a)*1.3,1,1,1,g);
+  const leaf=mesh(new THREE.ConeGeometry(.48,4,5),
+  green,Math.cos(a)*1.3,5,Math.sin(a)*1.3,1,1,1,g);
   leaf.rotation.z=-Math.cos(a)*.8;
   leaf.rotation.x=Math.sin(a)*.8;
  }
- mesh(new THREE.SphereGeometry(.4,7,6),green,0,5,0,1,1,1,g);
+ mesh(new THREE.SphereGeometry(.4,7,6),green,
+ 0,5,0,1,1,1,g);
 }
-[[-40,8],[-44,16],[-36,22],[-55,-25],[-5,12],[35,8],[39,13],[31,15],[5,-35]].forEach(p=>palm(p[0],p[1]));
 
-// Kayalar
+[[-40,8],[-44,16],[-36,22],[-55,-25],[-5,12],
+ [35,8],[39,13],[31,15],[5,-35]].forEach(p=>palm(p[0],p[1]));
+
+// KAYALAR
 for(let i=0;i<35;i++){
  const x=(Math.random()-.5)*100;
  const z=(Math.random()-.5)*100;
  if(Math.abs(x)<5&&Math.abs(z)<8)continue;
- const r=mesh(new THREE.DodecahedronGeometry(1,0),i%2?darkStone:stone,
- x,.4,z,.5+Math.random(),.4+Math.random()*.5,.5+Math.random());
+ const r=mesh(new THREE.DodecahedronGeometry(1,0),
+ i%2?darkStone:stone,x,.4,z,
+ .5+Math.random(),.4+Math.random()*.5,.5+Math.random());
  r.rotation.set(Math.random(),Math.random(),Math.random());
 }
 
-// =====================================
-// V25 - ACIK DUNYA: KOY, VAHA VE YOLLAR
-// =====================================
+// AÇIK DÜNYA: YOLLAR
+const roadMat=material(0xc49a69);
 
-const roadMat = material(0xc49a69);
-const houseMat = material(0xb99568);
-const roofMat = material(0x79563b);
-const awningMat = material(0x9b4930);
-const oasisWater = material(0x438d91);
-const marketMat = material(0x795035);
-
-// Kum yolu
 function makeRoad(x,z,w,h,rotation=0){
  const road=mesh(new THREE.PlaneGeometry(w,h),roadMat,x,.015,z);
  road.rotation.x=-Math.PI/2;
@@ -167,7 +194,12 @@ function makeRoad(x,z,w,h,rotation=0){
  return road;
 }
 
-// Köy evleri
+makeRoad(37,-5,17,65,0);
+makeRoad(29,-10,48,10,0);
+makeRoad(43,15,40,8,.15);
+makeRoad(54,34,8,38,-.4);
+
+// KÖY EVLERİ
 function makeHouse(x,z,size=1){
  const g=new THREE.Group();
  scene.add(g);
@@ -176,31 +208,19 @@ function makeHouse(x,z,size=1){
  mesh(new THREE.BoxGeometry(5*size,3*size,4*size),
  houseMat,0,1.5*size,0,1,1,1,g);
 
- // Düz çatı
  mesh(new THREE.BoxGeometry(5.4*size,.35*size,4.4*size),
  roofMat,0,3.1*size,0,1,1,1,g);
 
- // Kapı
  mesh(new THREE.BoxGeometry(.9*size,1.8*size,.12*size),
  darkLeather,0,.9*size,-2.05*size,1,1,1,g);
 
- // Küçük pencere
  mesh(new THREE.BoxGeometry(.65*size,.65*size,.13*size),
  darkStone,1.45*size,2*size,-2.06*size,1,1,1,g);
 
- // Ev önü basamağı
  mesh(new THREE.BoxGeometry(1.4*size,.2*size,.7*size),
  pale,0,.1*size,-2.35*size,1,1,1,g);
-
- return g;
 }
 
-// Ana köy meydanı
-makeRoad(37,-5,17,65,0);
-makeRoad(29,-10,48,10,0);
-makeRoad(43,15,40,8,.15);
-
-// Köy evleri
 makeHouse(27,-8,1);
 makeHouse(43,-10,.9);
 makeHouse(28,8,.85);
@@ -208,18 +228,18 @@ makeHouse(48,7,1);
 makeHouse(37,23,.95);
 makeHouse(55,-1,.8);
 
-// Pazar tezgahları
+// PAZAR
 function marketStall(x,z){
  const g=new THREE.Group();
  scene.add(g);
  g.position.set(x,0,z);
 
- mesh(new THREE.BoxGeometry(3,1.1,1.8),marketMat,0,.7,0,1,1,1,g);
+ mesh(new THREE.BoxGeometry(3,1.1,1.8),
+ marketMat,0,.7,0,1,1,1,g);
 
- // Tezgah örtüsü
- mesh(new THREE.BoxGeometry(3.5,.18,2.2),awningMat,0,1.45,0,1,1,1,g);
+ mesh(new THREE.BoxGeometry(3.5,.18,2.2),
+ awningMat,0,1.45,0,1,1,1,g);
 
- // Direkler
  for(const sx of [-1.45,1.45]){
   for(const sz of [-.85,.85]){
    mesh(new THREE.CylinderGeometry(.055,.055,2,5),
@@ -227,48 +247,42 @@ function marketStall(x,z){
   }
  }
 
- // Küpler ve sepetler
  for(let i=0;i<3;i++){
   mesh(new THREE.SphereGeometry(.22,7,5),
   i===1?gold:green,-.8+i*.8,1.35,-.3,1,1,1,g);
  }
 }
+
 marketStall(32,-18);
 marketStall(41,-19);
 marketStall(36,-23);
 
-// Köyün ambarı
-const barn=mesh(new THREE.BoxGeometry(8,4,7),roofMat,57,2,17);
+// AMBAR
+mesh(new THREE.BoxGeometry(8,4,7),roofMat,57,2,17);
 mesh(new THREE.ConeGeometry(6,2.5,4),darkStone,57,5.1,17,1,1,1);
 
-// Vaha
+// VAHA
 function makeOasis(x,z){
- // Su
- const pond=mesh(new THREE.CircleGeometry(8,24),oasisWater,x,.025,z);
+ const pond=mesh(new THREE.CircleGeometry(8,24),
+ oasisWater,x,.025,z);
  pond.rotation.x=-Math.PI/2;
 
- // Kum kıyısı
- const shore=mesh(new THREE.TorusGeometry(8.5,.8,5,24),pale,x,.04,z);
+ const shore=mesh(new THREE.TorusGeometry(8.5,.8,5,24),
+ pale,x,.04,z);
  shore.rotation.x=Math.PI/2;
 
- // Çevresindeki bitkiler
  for(let i=0;i<9;i++){
   const a=i*Math.PI*2/9;
   const px=x+Math.cos(a)*11;
   const pz=z+Math.sin(a)*11;
 
-  const trunk=mesh(
-   new THREE.CylinderGeometry(.18,.3,4.5,6),
-   darkStone,px,2.25,pz
-  );
+  mesh(new THREE.CylinderGeometry(.18,.3,4.5,6),
+  darkStone,px,2.25,pz);
 
   for(let j=0;j<5;j++){
    const b=j*Math.PI*2/5;
-   const leaf=mesh(
-    new THREE.ConeGeometry(.45,3.5,5),
-    green,
-    px+Math.cos(b)*1.2,4.4,pz+Math.sin(b)*1.2
-   );
+   const leaf=mesh(new THREE.ConeGeometry(.45,3.5,5),
+   green,px+Math.cos(b)*1.2,4.4,pz+Math.sin(b)*1.2);
    leaf.rotation.z=-Math.cos(b)*.8;
    leaf.rotation.x=Math.sin(b)*.8;
   }
@@ -276,16 +290,14 @@ function makeOasis(x,z){
 }
 makeOasis(65,48);
 
-// Vahaya giden yol
-makeRoad(54,34,8,38,-.4);
-
-// Antik harabeler
+// HARABELER
 function makeRuins(x,z){
  const g=new THREE.Group();
  scene.add(g);
  g.position.set(x,0,z);
 
- mesh(new THREE.BoxGeometry(12,.5,9),darkStone,0,.25,0,1,1,1,g);
+ mesh(new THREE.BoxGeometry(12,.5,9),
+ darkStone,0,.25,0,1,1,1,g);
 
  for(let i=0;i<4;i++){
   const px=(i%2)*8-4;
@@ -294,13 +306,16 @@ function makeRuins(x,z){
   stone,px,2.5,pz,1,1,1,g);
  }
 
- mesh(new THREE.BoxGeometry(11,.7,1.2),pale,0,4.8,-2.5,1,1,1,g);
- mesh(new THREE.BoxGeometry(11,.7,1.2),pale,0,4.8,2.5,1,1,1,g);
+ mesh(new THREE.BoxGeometry(11,.7,1.2),
+ pale,0,4.8,-2.5,1,1,1,g);
+ mesh(new THREE.BoxGeometry(11,.7,1.2),
+ pale,0,4.8,2.5,1,1,1,g);
 }
+
 makeRuins(-35,35);
 makeRuins(75,-40);
 
-// Uzak keşif noktaları
+// UZAK KEŞİF NOKTALARI
 function landmark(x,z){
  mesh(new THREE.CylinderGeometry(2.5,3.2,5,6),
  darkStone,x,2.5,z);
@@ -311,25 +326,26 @@ landmark(-65,-65);
 landmark(70,65);
 landmark(5,-75);
 
-// Haritada taş işaretleri
+// TAŞLAR
 for(let i=0;i<12;i++){
  const x=-85+Math.random()*170;
  const z=-85+Math.random()*170;
- if(Math.abs(x)<15 && Math.abs(z)<15)continue;
+ if(Math.abs(x)<15&&Math.abs(z)<15)continue;
  mesh(new THREE.DodecahedronGeometry(.8,0),
  darkStone,x,.5,z,1.2,.8,1);
 }
 
-// Köyün giriş kemeri
+// KÖY GİRİŞİ
 const gate=new THREE.Group();
 scene.add(gate);
 gate.position.set(37,0,-32);
 
-mesh(new THREE.BoxGeometry(1.2,5,1.2),stone,-3,2.5,0,1,1,1,gate);
-mesh(new THREE.BoxGeometry(1.2,5,1.2),stone,3,2.5,0,1,1,1,gate);
-mesh(new THREE.BoxGeometry(8,1.2,1.5),darkStone,0,5,0,1,1,1,gate);
-
-console.log("Kayıp Firavun v25 açık dünya yüklendi");
+mesh(new THREE.BoxGeometry(1.2,5,1.2),
+ stone,-3,2.5,0,1,1,1,gate);
+mesh(new THREE.BoxGeometry(1.2,5,1.2),
+ stone,3,2.5,0,1,1,1,gate);
+mesh(new THREE.BoxGeometry(8,1.2,1.5),
+ darkStone,0,5,0,1,1,1,gate);
 
 // BAYEK ESİNTİLİ MEDJAY KARAKTERİ
 const player=new THREE.Group();
@@ -347,61 +363,93 @@ for(const side of [-1,1]){
  const leg=part(new THREE.CylinderGeometry(.16,.19,.9,7),
  leatherLight,side*.2,.55,0);
  legs.push(leg);
- part(new THREE.BoxGeometry(.34,.2,.48),darkLeather,side*.2,.12,-.08);
- part(new THREE.BoxGeometry(.32,.25,.22),leather,side*.2,.68,-.12);
+
+ part(new THREE.BoxGeometry(.34,.2,.48),
+ darkLeather,side*.2,.12,-.08);
+
+ part(new THREE.BoxGeometry(.32,.25,.22),
+ leather,side*.2,.68,-.12);
 }
 
 // Tunik ve zırh
-part(new THREE.CylinderGeometry(.39,.52,1.2,8),cloth,0,1.55,0);
-part(new THREE.BoxGeometry(.78,.85,.18),leather,0,1.75,-.27);
+part(new THREE.CylinderGeometry(.39,.52,1.2,8),
+ cloth,0,1.55,0);
 
-const strap1=part(new THREE.BoxGeometry(.13,1.05,.12),leatherLight,-.12,1.78,-.39);
+part(new THREE.BoxGeometry(.78,.85,.18),
+ leather,0,1.75,-.27);
+
+const strap1=part(new THREE.BoxGeometry(.13,1.05,.12),
+ leatherLight,-.12,1.78,-.39);
 strap1.rotation.z=-.42;
-const strap2=part(new THREE.BoxGeometry(.11,.9,.12),darkLeather,.2,1.8,-.4);
+
+const strap2=part(new THREE.BoxGeometry(.11,.9,.12),
+ darkLeather,.2,1.8,-.4);
 strap2.rotation.z=.5;
 
 // Omuzluklar
-part(new THREE.SphereGeometry(.25,8,6),leatherLight,-.48,2.02,0,1,.75,1);
-part(new THREE.SphereGeometry(.25,8,6),leatherLight,.48,2.02,0,1,.75,1);
+part(new THREE.SphereGeometry(.25,8,6),
+ leatherLight,-.48,2.02,0,1,.75,1);
+part(new THREE.SphereGeometry(.25,8,6),
+ leatherLight,.48,2.02,0,1,.75,1);
 
 // Kemer ve kumaş
-part(new THREE.BoxGeometry(.85,.16,.55),darkLeather,0,1.12,0);
-part(new THREE.BoxGeometry(.2,.19,.08),bronze,0,1.12,-.3);
+part(new THREE.BoxGeometry(.85,.16,.55),
+ darkLeather,0,1.12,0);
+part(new THREE.BoxGeometry(.2,.19,.08),
+ bronze,0,1.12,-.3);
+
 for(let i=-1;i<=1;i++){
- part(new THREE.BoxGeometry(.25,.65,.08),i===0?cloth:leatherLight,i*.24,.72,-.24);
+ part(new THREE.BoxGeometry(.25,.65,.08),
+ i===0?cloth:leatherLight,i*.24,.72,-.24);
 }
 
 // Boyun ve kafa
-part(new THREE.CylinderGeometry(.14,.15,.25,8),skin,0,2.28,0);
-part(new THREE.SphereGeometry(.31,10,8),skin,0,2.57,0);
+part(new THREE.CylinderGeometry(.14,.15,.25,8),
+ skin,0,2.28,0);
+part(new THREE.SphereGeometry(.31,10,8),
+ skin,0,2.57,0);
 
 // Kapüşon
-part(new THREE.SphereGeometry(.39,10,8),hood,0,2.75,.04,1,1.05,1.05);
-part(new THREE.BoxGeometry(.18,.65,.3),hood,-.3,2.55,.02);
-part(new THREE.BoxGeometry(.18,.65,.3),hood,.3,2.55,.02);
-part(new THREE.BoxGeometry(.66,.13,.23),leatherLight,0,2.79,-.25);
+part(new THREE.SphereGeometry(.39,10,8),
+ hood,0,2.75,.04,1,1.05,1.05);
+part(new THREE.BoxGeometry(.18,.65,.3),
+ hood,-.3,2.55,.02);
+part(new THREE.BoxGeometry(.18,.65,.3),
+ hood,.3,2.55,.02);
+part(new THREE.BoxGeometry(.66,.13,.23),
+ leatherLight,0,2.79,-.25);
 
 // Kollar
 const arms=[];
 for(const side of [-1,1]){
- const arm=part(new THREE.CylinderGeometry(.13,.17,.82,7),skin,side*.52,1.65,0);
+ const arm=part(new THREE.CylinderGeometry(.13,.17,.82,7),
+ skin,side*.52,1.65,0);
  arm.rotation.z=side*.17;
  arms.push(arm);
- part(new THREE.BoxGeometry(.25,.36,.28),leatherLight,side*.58,1.48,-.04);
- part(new THREE.CylinderGeometry(.17,.17,.16,8),bronze,side*.58,1.27,0);
+
+ part(new THREE.BoxGeometry(.25,.36,.28),
+ leatherLight,side*.58,1.48,-.04);
+
+ part(new THREE.CylinderGeometry(.17,.17,.16,8),
+ bronze,side*.58,1.27,0);
 }
 
 // Sırtta yay
 const bowGroup=new THREE.Group();
 body.add(bowGroup);
 bowGroup.position.set(.42,1.75,.28);
-const bow=part(new THREE.TorusGeometry(.48,.035,5,12,Math.PI),leatherLight,0,0,0,1,1,1,bowGroup);
+
+const bow=part(new THREE.TorusGeometry(.48,.035,5,12,Math.PI),
+ leatherLight,0,0,0,1,1,1,bowGroup);
 bow.rotation.z=Math.PI/2;
 
 // Ok kılıfı ve oklar
-part(new THREE.CylinderGeometry(.13,.17,.8,7),darkLeather,.2,1.9,.38);
+part(new THREE.CylinderGeometry(.13,.17,.8,7),
+ darkLeather,.2,1.9,.38);
+
 for(let i=0;i<4;i++){
- part(new THREE.CylinderGeometry(.018,.018,.95,4),cloth,.08+i*.075,2.45,.38);
+ part(new THREE.CylinderGeometry(.018,.018,.95,4),
+ cloth,.08+i*.075,2.45,.38);
 }
 
 // Kılıç
@@ -409,14 +457,19 @@ const sword=new THREE.Group();
 body.add(sword);
 sword.position.set(.55,1.1,-.05);
 sword.rotation.z=-.35;
-part(new THREE.BoxGeometry(.09,.65,.07),metal,0,-.35,0,1,1,1,sword);
-part(new THREE.BoxGeometry(.3,.09,.1),bronze,0,-.05,0,1,1,1,sword);
-part(new THREE.CylinderGeometry(.045,.045,.25,6),darkLeather,0,.12,0,1,1,1,sword);
+
+part(new THREE.BoxGeometry(.09,.65,.07),
+ metal,0,-.35,0,1,1,1,sword);
+part(new THREE.BoxGeometry(.3,.09,.1),
+ bronze,0,-.05,0,1,1,1,sword);
+part(new THREE.CylinderGeometry(.045,.045,.25,6),
+ darkLeather,0,.12,0,1,1,1,sword);
 
 // Omuz kumaşı
-part(new THREE.BoxGeometry(.38,.55,.12),cloth,-.43,1.65,.12);
+part(new THREE.BoxGeometry(.38,.55,.12),
+ cloth,-.43,1.65,.12);
 
-// Hareket kontrolleri
+// KONTROLLER
 let angle=0;
 let joyX=0,joyY=0;
 let looking=false,lastX=0;
@@ -438,9 +491,11 @@ function updateJoy(e){
  stick.style.transform=`translate(${x}px,${y}px)`;
 }
 function resetJoy(){
- joyX=0;joyY=0;
+ joyX=0;
+ joyY=0;
  stick.style.transform="translate(0,0)";
 }
+
 joy.addEventListener("pointerdown",e=>{
  joy.setPointerCapture(e.pointerId);
  updateJoy(e);
@@ -465,12 +520,12 @@ lookArea.addEventListener("pointermove",e=>{
 lookArea.addEventListener("pointerup",()=>looking=false);
 lookArea.addEventListener("pointercancel",()=>looking=false);
 
-// Klavye desteği
+// KLAVYE
 const keys={};
 addEventListener("keydown",e=>keys[e.key.toLowerCase()]=true);
 addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
 
-// Oyun döngüsü
+// OYUN DÖNGÜSÜ
 const clock=new THREE.Clock();
 const target=new THREE.Vector3();
 
@@ -485,10 +540,12 @@ function animate(){
  if(keys.d||keys.arrowright)x=1;
 
  const moving=Math.hypot(x,y)>.12;
+
  if(moving){
   const speed=5*dt;
   const mx=(x*Math.cos(angle)+y*Math.sin(angle))*speed;
   const mz=(x*Math.sin(angle)-y*Math.cos(angle))*speed;
+
   player.position.x+=mx;
   player.position.z+=mz;
   body.rotation.y=Math.atan2(mx,-mz);
@@ -508,21 +565,30 @@ function animate(){
   player.position.y+4.2,
   player.position.z+Math.cos(angle)*7.5
  );
- camera.position.lerp(target,.1);
- camera.lookAt(player.position.x,player.position.y+1.5,player.position.z);
 
- document.getElementById("status").textContent=moving?"Keşfe devam et...":"Çölü keşfet";
+ camera.position.lerp(target,.1);
+ camera.lookAt(
+  player.position.x,
+  player.position.y+1.5,
+  player.position.z
+ );
+
+ document.getElementById("status").textContent=
+ moving?"Keşfe devam et...":"Çölü keşfet";
+
  renderer.render(scene,camera);
 }
 animate();
 
-// Ekran boyutu
+// EKRAN BOYUTU
 addEventListener("resize",()=>{
  camera.aspect=innerWidth/innerHeight;
  camera.updateProjectionMatrix();
  renderer.setPixelRatio(Math.min(devicePixelRatio,1));
  renderer.setSize(innerWidth,innerHeight);
 });
+
+console.log("Kayıp Firavun v25.2 hazır");
 </script>
 </body>
 </html>
