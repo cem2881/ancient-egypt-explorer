@@ -1,1 +1,294 @@
 
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Mısır Keşfi</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#c9a36c;font-family:Arial}
+canvas{display:block}
+#ui{position:fixed;inset:0;pointer-events:none;color:white}
+#title{position:absolute;top:15px;left:15px;font-size:17px;font-weight:bold;text-shadow:0 2px 5px #000}
+#help{position:absolute;top:40px;left:15px;font-size:11px;text-shadow:0 2px 5px #000}
+#joy{position:absolute;left:25px;bottom:35px;width:130px;height:130px;border-radius:50%;background:#ffffff30;border:2px solid #ffffff80;pointer-events:auto;touch-action:none}
+#knob{position:absolute;width:52px;height:52px;left:37px;top:37px;border-radius:50%;background:#ffffffa0}
+#look{position:absolute;right:25px;bottom:45px;width:90px;height:90px;border-radius:50%;background:#ffffff25;border:2px solid #ffffff70;pointer-events:auto;touch-action:none}
+#look:after{content:"KAMERA";position:absolute;inset:0;display:grid;place-items:center;font-size:11px}
+</style>
+</head>
+<body>
+<div id="ui">
+ <div id="title">MISIR — KEŞİF</div>
+ <div id="help">Joystick: hareket · Sağ taraf: kamerayı çevir</div>
+ <div id="joy"><div id="knob"></div></div>
+ <div id="look"></div>
+</div>
+
+<script type="importmap">
+{
+ "imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+ }
+}
+</script>
+
+<script type="module">
+import * as THREE from "three";
+import {GLTFLoader} from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0xb9a078);
+scene.fog=new THREE.Fog(0xb9a078,75,240);
+
+const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,500);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+scene.add(new THREE.HemisphereLight(0xffe6bd,0x66503a,2));
+const sun=new THREE.DirectionalLight(0xffe1ad,3);
+sun.position.set(-40,70,35);
+sun.castShadow=true;
+sun.shadow.mapSize.set(1024,1024);
+scene.add(sun);
+
+const sand=new THREE.Mesh(
+ new THREE.PlaneGeometry(500,500),
+ new THREE.MeshStandardMaterial({color:0xc6a16b,roughness:1})
+);
+sand.rotation.x=-Math.PI/2;
+sand.receiveShadow=true;
+scene.add(sand);
+
+// Kum tepeleri
+for(let i=0;i<55;i++){
+ const m=new THREE.Mesh(
+  new THREE.SphereGeometry(1,12,8),
+  new THREE.MeshStandardMaterial({color:0xb99460,roughness:1})
+ );
+ m.scale.set(THREE.MathUtils.randFloat(5,14),THREE.MathUtils.randFloat(.5,1.5),THREE.MathUtils.randFloat(4,10));
+ m.position.set(THREE.MathUtils.randFloatSpread(220),-.2,THREE.MathUtils.randFloatSpread(220));
+ scene.add(m);
+}
+
+// Yapılar ve çarpışma alanları
+const obstacles=[];
+const stone=new THREE.MeshStandardMaterial({color:0xc9ad7c,roughness:1});
+const darkStone=new THREE.MeshStandardMaterial({color:0x9d8058,roughness:1});
+
+function obstacle(x,z,w,d){
+ obstacles.push({x,z,w,d});
+}
+
+function pyramid(x,z,size){
+ const group=new THREE.Group();
+ const geo=new THREE.ConeGeometry(size, size*.9,4);
+ const mesh=new THREE.Mesh(geo,stone);
+ mesh.rotation.y=Math.PI/4;
+ mesh.position.y=size*.45;
+ mesh.castShadow=true;
+ group.add(mesh);
+ group.position.set(x,0,z);
+ scene.add(group);
+ obstacle(x,z,size*.85,size*.85);
+}
+
+function temple(x,z){
+ const g=new THREE.Group();
+ const base=new THREE.Mesh(new THREE.BoxGeometry(17,1,12),darkStone);
+ base.position.y=.5;g.add(base);
+ const roof=new THREE.Mesh(new THREE.BoxGeometry(17,1.3,12),stone);
+ roof.position.y=7;g.add(roof);
+ for(let i=0;i<6;i++){
+  for(let side of [-1,1]){
+   const c=new THREE.Mesh(new THREE.CylinderGeometry(.65,.8,5.5,12),stone);
+   c.position.set(-7+i*2.8,3.5,side*4.5);
+   c.castShadow=true;g.add(c);
+  }
+ }
+ g.position.set(x,0,z);
+ scene.add(g);
+ obstacle(x,z,19,15);
+}
+
+function obelisk(x,z){
+ const g=new THREE.Group();
+ const base=new THREE.Mesh(new THREE.BoxGeometry(3,1,3),darkStone);
+ base.position.y=.5;g.add(base);
+ const shaft=new THREE.Mesh(new THREE.BoxGeometry(1.3,9,1.3),stone);
+ shaft.position.y=5;g.add(shaft);
+ const tip=new THREE.Mesh(new THREE.ConeGeometry(.92,2,4),stone);
+ tip.position.y=10.5;g.add(tip);
+ g.position.set(x,0,z);scene.add(g);
+ obstacle(x,z,4,4);
+}
+
+pyramid(-38,-35,19);
+pyramid(42,-48,15);
+pyramid(55,38,12);
+temple(0,-55);
+temple(-65,35);
+obelisk(-17,-22);
+obelisk(20,25);
+obelisk(75,-10);
+
+// GLB modeller: dosyalar ana klasörde, bu dosya engine klasöründe.
+const loader=new GLTFLoader();
+const modelList=[
+ ["great-sandstone-sphinx.glb",-12,-32,5,5],
+ ["desert-step-pyramid.glb",-38,-35,18,18],
+ ["desert-temple-hall.glb",0,-55,19,15],
+ ["pharaoh-colossi-gate.glb",35,5,12,8],
+ ["desert-obelisk-set.glb",-17,-22,5,5],
+ ["desert-tomb-entrance.glb",65,45,10,8]
+];
+
+for(const [file,x,z,w,d] of modelList){
+ loader.load("../"+file,gltf=>{
+  const model=gltf.scene;
+  model.position.set(x,0,z);
+  model.scale.setScalar(1);
+  model.traverse(o=>{
+   if(o.isMesh){o.castShadow=true;o.receiveShadow=true}
+  });
+  scene.add(model);
+ },undefined,err=>console.log("Model yüklenemedi:",file));
+}
+
+// Karakter
+const player=new THREE.Group();
+const body=new THREE.Mesh(
+ new THREE.CapsuleGeometry(.48,.9,5,8),
+ new THREE.MeshStandardMaterial({color:0x7d4930})
+);
+body.position.y=1.05;
+body.castShadow=true;
+player.add(body);
+
+const head=new THREE.Mesh(
+ new THREE.SphereGeometry(.32,16,12),
+ new THREE.MeshStandardMaterial({color:0xb9825b})
+);
+head.position.y=1.9;
+head.castShadow=true;
+player.add(head);
+
+const cloth=new THREE.Mesh(
+ new THREE.BoxGeometry(.85,.65,.48),
+ new THREE.MeshStandardMaterial({color:0xd9c49a})
+);
+cloth.position.y=.85;
+player.add(cloth);
+player.position.set(0,0,12);
+scene.add(player);
+
+// Kamera ve hareket
+let yaw=0;
+let camYaw=0;
+let joyX=0,joyY=0;
+const keys={};
+addEventListener("keydown",e=>keys[e.key.toLowerCase()]=true);
+addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
+
+function blocked(x,z){
+ for(const o of obstacles){
+  if(Math.abs(x-o.x)<o.w/2+0.7 && Math.abs(z-o.z)<o.d/2+0.7)return true;
+ }
+ return false;
+}
+
+const joy=document.getElementById("joy");
+const knob=document.getElementById("knob");
+let joyId=null;
+joy.addEventListener("pointerdown",e=>{
+ joyId=e.pointerId;joy.setPointerCapture(joyId);moveJoy(e);
+});
+joy.addEventListener("pointermove",e=>{if(e.pointerId===joyId)moveJoy(e)});
+function moveJoy(e){
+ const r=joy.getBoundingClientRect();
+ let dx=e.clientX-(r.left+r.width/2);
+ let dy=e.clientY-(r.top+r.height/2);
+ const len=Math.hypot(dx,dy),max=42;
+ if(len>max){dx=dx/len*max;dy=dy/len*max}
+ joyX=dx/max;joyY=dy/max;
+ knob.style.transform=`translate(${dx}px,${dy}px)`;
+}
+function endJoy(){
+ joyId=null;joyX=joyY=0;knob.style.transform="translate(0,0)";
+}
+joy.addEventListener("pointerup",endJoy);
+joy.addEventListener("pointercancel",endJoy);
+
+// Sağ tarafta sürükleyerek kamera çevirme
+const look=document.getElementById("look");
+let lookId=null,lastX=0;
+look.addEventListener("pointerdown",e=>{
+ lookId=e.pointerId;lastX=e.clientX;look.setPointerCapture(lookId);
+});
+look.addEventListener("pointermove",e=>{
+ if(e.pointerId===lookId){
+  camYaw-=(e.clientX-lastX)*.008;
+  lastX=e.clientX;
+ }
+});
+look.addEventListener("pointerup",()=>lookId=null);
+look.addEventListener("pointercancel",()=>lookId=null);
+
+const clock=new THREE.Clock();
+function animate(){
+ requestAnimationFrame(animate);
+ const dt=Math.min(clock.getDelta(),.04);
+
+ let forward=joyY;
+ let side=joyX;
+ if(keys.w||keys.arrowup)forward=-1;
+ if(keys.s||keys.arrowdown)forward=1;
+ if(keys.a||keys.arrowleft)side=-1;
+ if(keys.d||keys.arrowright)side=1;
+
+ const direction=new THREE.Vector3(side,0,forward);
+ if(direction.length()>1)direction.normalize();
+
+ const angle=camYaw;
+ const dx=(direction.x*Math.cos(angle)+direction.z*Math.sin(angle));
+ const dz=(-direction.x*Math.sin(angle)+direction.z*Math.cos(angle));
+
+ const speed=9;
+ const nx=player.position.x+dx*speed*dt;
+ const nz=player.position.z+dz*speed*dt;
+
+ if(!blocked(nx,player.position.z))player.position.x=nx;
+ if(!blocked(player.position.x,nz))player.position.z=nz;
+
+ if(direction.lengthSq()>.01){
+  player.rotation.y=Math.atan2(dx,dz)+Math.PI;
+ }
+
+ const target=new THREE.Vector3(
+  player.position.x+Math.sin(camYaw)*8,
+  5,
+  player.position.z+Math.cos(camYaw)*8
+ );
+ camera.position.lerp(target,.09);
+ camera.lookAt(player.position.x,1.2,player.position.z);
+
+ renderer.render(scene,camera);
+}
+camera.position.set(0,5,22);
+animate();
+
+addEventListener("resize",()=>{
+ camera.aspect=innerWidth/innerHeight;
+ camera.updateProjectionMatrix();
+ renderer.setSize(innerWidth,innerHeight);
+});
+</script>
+</body>
+</html>
+
