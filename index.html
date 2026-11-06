@@ -1,216 +1,51 @@
 <!doctype html>
 <html lang="tr">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>MEDJAY — Antik Mısır Keşfi</title>
 <style>
-:root{--gold:#e8bd68;--ink:#17130f}
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#d9ad70;font-family:system-ui,-apple-system,Segoe UI,sans-serif;touch-action:none}
-canvas{display:block}
-#game{position:fixed;inset:0}
-#loading{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:linear-gradient(#1d2930,#9a7045);color:#fff;text-align:center;padding:24px}
-#loading .card{max-width:360px;background:#151b20dd;border:1px solid #d5b36b66;border-radius:18px;padding:24px}
-#loading h1{font-size:25px;margin:0 0 8px;color:#f2cf82;letter-spacing:1px}
-#loading p{opacity:.85;font-size:14px;line-height:1.5}
-#bar{height:5px;background:#ffffff33;border-radius:9px;overflow:hidden;margin-top:18px}
-#bar i{display:block;width:20%;height:100%;background:#e9bd68;animation:load 1.5s infinite alternate}
-@keyframes load{to{width:95%}}
-#hud{position:fixed;inset:0;pointer-events:none;color:white;text-shadow:0 2px 5px #352312}
-#brand{position:absolute;left:18px;top:14px;font-weight:900;font-size:clamp(16px,2.5vw,24px);letter-spacing:1px}
-#sub{font-size:11px;opacity:.9;font-weight:500;letter-spacing:0}
-#objective{position:absolute;right:16px;top:14px;background:#171a1bd9;border:1px solid #e7c47b66;border-radius:12px;padding:10px 13px;max-width:220px;font-size:12px}
-#objective b{display:block;color:#f1cf88;font-size:11px;margin-bottom:3px;letter-spacing:1px}
-#counter{position:absolute;left:18px;top:72px;font-size:13px}
-#toast{position:absolute;left:50%;top:23%;transform:translate(-50%,-10px);opacity:0;background:#171a1ddd;border:1px solid #e7c47b88;border-radius:12px;padding:10px 15px;font-size:13px;transition:.25s}
-#toast.show{opacity:1;transform:translate(-50%,0)}
-#controls{position:absolute;inset:0}
-#stick{position:absolute;left:max(18px,env(safe-area-inset-left));bottom:max(22px,env(safe-area-inset-bottom));width:132px;height:132px;border-radius:50%;border:2px solid #ffffff88;background:#ffffff20;pointer-events:auto}
-#nub{position:absolute;width:48px;height:48px;left:40px;top:40px;border-radius:50%;background:#fff9;border:2px solid white;box-shadow:0 3px 12px #4a2b1680}
-#actions{position:absolute;right:max(18px,env(safe-area-inset-right));bottom:max(24px,env(safe-area-inset-bottom));display:flex;gap:12px;align-items:end;pointer-events:auto}
-.action{width:65px;height:65px;border-radius:50%;border:1px solid #ffffff99;background:#211b17a8;color:#fff;font-weight:800;font-size:11px;box-shadow:0 3px 12px #432b1e55}
-.action:active{background:#9a672e}
-#hint{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);font-size:10px;opacity:.75;white-space:nowrap}
-#maptag{position:absolute;right:17px;top:91px;font-size:10px;opacity:.8}
-#rotate{display:none;position:fixed;inset:0;background:#17130f;color:white;z-index:30;place-items:center;text-align:center;padding:30px}
-@media(orientation:portrait){#rotate{display:grid}}
-@media(orientation:landscape) and (max-height:500px){#stick{width:108px;height:108px}#nub{left:31px;top:31px;width:42px;height:42px}.action{width:57px;height:57px}#counter{top:58px}}
+:root{--gold:#e9c477}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#c99c62;font-family:system-ui,-apple-system,Segoe UI,sans-serif;touch-action:none}canvas{display:block}#game{position:fixed;inset:0}#loading{position:fixed;inset:0;z-index:30;display:grid;place-items:center;background:linear-gradient(#18252d,#8e6540);color:#fff;text-align:center;padding:24px;transition:opacity .6s}#loading .card{max-width:360px;background:#111a20e8;border:1px solid #d5b36b66;border-radius:18px;padding:25px}#loading h1{font-size:28px;margin:0;color:var(--gold);letter-spacing:3px}#loading p{font-size:13px;line-height:1.5;opacity:.85}#bar{height:5px;background:#ffffff30;border-radius:8px;overflow:hidden}#bar i{display:block;height:100%;width:0;background:var(--gold);transition:width .25s}#hud{position:fixed;inset:0;pointer-events:none;color:white;text-shadow:0 2px 5px #352312}#brand{position:absolute;left:16px;top:12px;font-weight:900;letter-spacing:1px;font-size:clamp(15px,2.5vw,23px)}#brand small{display:block;font-size:9px;letter-spacing:2px;color:#f1d28f}#objective{position:absolute;right:13px;top:12px;background:#171a1bd9;border:1px solid #e7c47b66;border-radius:11px;padding:9px 12px;max-width:220px;font-size:11px}#objective b{display:block;color:#f1cf88;font-size:10px;margin-bottom:3px}#counter{position:absolute;left:17px;top:64px;font-size:12px}#toast{position:absolute;left:50%;top:23%;transform:translate(-50%,-10px);opacity:0;background:#171a1ddd;border:1px solid #e7c47b88;border-radius:12px;padding:10px 15px;font-size:12px;transition:.25s;white-space:nowrap}#toast.show{opacity:1;transform:translate(-50%,0)}#stick{position:absolute;left:max(17px,env(safe-area-inset-left));bottom:max(18px,env(safe-area-inset-bottom));width:118px;height:118px;border-radius:50%;border:2px solid #ffffff88;background:#ffffff20;pointer-events:auto}#nub{position:absolute;width:46px;height:46px;left:34px;top:34px;border-radius:50%;background:#fff9;border:2px solid white}#actions{position:absolute;right:max(16px,env(safe-area-inset-right));bottom:max(22px,env(safe-area-inset-bottom));display:flex;gap:10px;align-items:end;pointer-events:auto}.action{width:61px;height:61px;border-radius:50%;border:1px solid #ffffff99;background:#211b17b8;color:#fff;font-weight:800;font-size:10px}.action:active{background:#9a672e}#hint{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:9px;opacity:.75;white-space:nowrap}#rotate{display:none;position:fixed;inset:0;background:#17130f;color:white;z-index:40;place-items:center;text-align:center;padding:30px}@media(orientation:portrait){#rotate{display:grid}}@media(orientation:landscape) and (max-height:500px){#stick{width:96px;height:96px}#nub{left:25px;top:25px;width:42px;height:42px}.action{width:54px;height:54px}#counter{top:53px}}
 </style>
 </head>
-<body>
-<div id="game"></div>
-<div id="loading"><div class="card"><h1>MEDJAY</h1><strong>ANTİK MISIR KEŞFİ</strong><p>Çöl, tapınaklar ve kayıp eserler hazırlanıyor…<br>En iyi deneyim için telefonu yatay tut.</p><div id="bar"><i></i></div></div></div>
-<div id="rotate">Oyunu oynamak için telefonu yatay çevir.</div>
-<div id="hud">
- <div id="brand">MEDJAY <span id="sub"> / ANTİK MISIR KEŞFİ</span></div>
- <div id="objective"><b>GÖREV</b>Kayıp kutsal eserleri bul.</div>
- <div id="counter">Eserler: <span id="found">0</span> / 6</div>
- <div id="maptag">GİZLİ VAHA • GÜNEY ÇÖLÜ</div>
- <div id="toast"></div>
- <div id="controls">
-  <div id="stick"><div id="nub"></div></div>
-  <div id="actions"><button class="action" id="run">KOŞ</button><button class="action" id="interact">İNCELE</button></div>
-  <div id="hint">Sol joystick: hareket · Ekranın sağ tarafını sürükle: kamerayı çevir</div>
- </div>
-</div>
+<body><div id="game"></div><div id="loading"><div class="card"><h1>MEDJAY</h1><b>ANTİK MISIR KEŞFİ</b><p id="loadtext">Çöl dünyası hazırlanıyor…</p><div id="bar"><i id="progress"></i></div></div></div><div id="rotate">Oyunu oynamak için telefonu yatay çevir.</div>
+<div id="hud"><div id="brand">MEDJAY<small>ANTİK MISIR KEŞFİ</small></div><div id="objective"><b>ANA GÖREV</b>Kayıp kutsal eserleri bul ve tapınağa ulaş.</div><div id="counter">Eserler: <span id="found">0</span> / 6</div><div id="toast"></div><div id="stick"><div id="nub"></div></div><div id="actions"><button class="action" id="run">KOŞ</button><button class="action" id="interact">İNCELE</button></div><div id="hint">Sol joystick: hareket · Sağ tarafı sürükle: kamerayı çevir</div></div>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-
-const root=document.getElementById('game');
-const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x9fc6d8);
-scene.fog=new THREE.FogExp2(0xdcb77f,0.00175);
-const camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,.1,650);
-const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.65));
-renderer.setSize(innerWidth,innerHeight);
-renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-renderer.outputColorSpace=THREE.SRGBColorSpace;
-renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;
-root.appendChild(renderer.domElement);
-scene.add(new THREE.HemisphereLight(0xffe8c5,0x886044,2.0));
-const sun=new THREE.DirectionalLight(0xffe0ae,3.0);sun.position.set(-70,110,55);sun.castShadow=true;
-sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-100;sun.shadow.camera.right=100;sun.shadow.camera.top=100;sun.shadow.camera.bottom=-100;scene.add(sun);
-
-const mat=(color,roughness=1)=>new THREE.MeshStandardMaterial({color,roughness});
-const sand=mat(0xc99a5c),sandLight=mat(0xe2bd80),stone=mat(0xb99a70),stoneDark=mat(0x80684f),limestone=mat(0xd9c49b),blue=mat(0x287d83),gold=mat(0xd6a746,.55),dark=mat(0x35261c),cloth=mat(0x8d3928);
-const ground=new THREE.Mesh(new THREE.PlaneGeometry(650,650),sand);ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
-function box(w,h,d,m,x,y,z,rot=0){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.rotation.y=rot;o.castShadow=true;o.receiveShadow=true;scene.add(o);return o}
-function cylinder(rt,rb,h,m,x,y,z,seg=8){const o=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;scene.add(o);return o}
-function sphere(r,m,x,y,z,seg=12){const o=new THREE.Mesh(new THREE.SphereGeometry(r,seg,8),m);o.position.set(x,y,z);o.castShadow=true;scene.add(o);return o}
-const colliders=[];
-function collider(x,z,r){colliders.push({x,z,r})}
-function pyramid(x,z,size){
- const g=new THREE.ConeGeometry(size*.72,size,4,1);const p=new THREE.Mesh(g,limestone);p.position.set(x,size/2,z);p.rotation.y=Math.PI/4;p.castShadow=true;p.receiveShadow=true;scene.add(p);collider(x,z,size*.62);
- const base=new THREE.Mesh(new THREE.BoxGeometry(size*1.08,.65,size*1.08),stone);base.position.set(x,.3,z);base.castShadow=true;scene.add(base);
-}
-function temple(x,z){
- // courtyard and monumental pylon
- box(30,.8,22,stone,x,.4,z);box(32,.35,24,sandLight,x,.95,z);
- box(8,15,3,limestone,x-9,8,z-8);box(8,15,3,limestone,x+9,8,z-8);
- box(26,2,3,stoneDark,x,15.8,z-8);
- box(5,10,3,stone,x-9,6,z+7);box(5,10,3,stone,x+9,6,z+7);
- // columns
- for(let i=0;i<6;i++){let xx=x-10+i*4; cylinder(1.05,.85,8,limestone,xx,5,z+1,12);cylinder(1.45,1.1,1,gold,xx,9.2,z+1,12);box(3,.45,3,stone,xx,9.8,z+1)}
- // painted lintel + stairs
- box(18,.5,2,blue,x,12,z+1);box(17,.35,2,gold,x,12.45,z+1);
- for(let i=0;i<7;i++)box(10-i*.8,.35,1.2,limestone,x,1+i*.35,z-13-i*1.1);
- collider(x-9,z-8,4.5);collider(x+9,z-8,4.5);collider(x,z-8,5);collider(x,z+7,4);
-}
-function sphinx(x,z){
- // stylized recumbent sphinx
- const body=new THREE.Mesh(new THREE.BoxGeometry(8,2.3,3.2),stone);body.position.set(x,1.4,z);body.castShadow=true;scene.add(body);
- const head=sphere(1.55,limestone,x,3.5,z-1.1,16);head.scale.set(.85,1.25,.8);
- box(2.6,.55,1.1,blue,x,4.5,z-1.2);box(2.8,.25,1.15,gold,x,4.8,z-1.2);
- box(1.8,1.1,2.1,stone,x,2.8,z-2.2);
- collider(x,z,4.5);
-}
-function obelisk(x,z){
- const o=new THREE.Mesh(new THREE.CylinderGeometry(.12,.8,10,4),limestone);o.position.set(x,5,z);o.castShadow=true;scene.add(o);
- const tip=new THREE.Mesh(new THREE.ConeGeometry(.8,1.5,4),gold);tip.position.set(x,10.7,z);tip.castShadow=true;scene.add(tip);
- box(2,.6,2,stoneDark,x,.3,z);collider(x,z,1.6);
-}
-function palm(x,z){
- const trunk=cylinder(.28,.48,7,stoneDark,x,3.5,z,7);trunk.rotation.z=(Math.random()-.5)*.12;
- for(let i=0;i<8;i++){const a=i*Math.PI/4;const leaf=new THREE.Mesh(new THREE.ConeGeometry(.48,5,5),mat(0x537b43));leaf.position.set(x+Math.cos(a)*1.7,7.1+Math.sin(a)*.4,z+Math.sin(a)*1.7);leaf.rotation.z=Math.cos(a)*.9;leaf.rotation.x=Math.sin(a)*.9;leaf.castShadow=true;scene.add(leaf)}
- collider(x,z,1.1);
-}
-function house(x,z){
- box(8,5,7,sandLight,x,2.5,z);box(9,.6,8,stone,x,5.1,z);
- box(2.2,3, .3,dark,x,1.5,z-3.56);box(1,.35,.2,blue,x,4,z-3.62);
- for(let i=0;i<3;i++)box(1.4,.3,1.1,stoneDark,x-3+i*3,.6,z-4.1-i*.4);
- collider(x,z,4.5);
-}
-temple(0,-43);pyramid(-53,-75,24);pyramid(53,-88,31);pyramid(77,12,18);
-sphinx(-23,-30);sphinx(25,-28);
-for(let i=0;i<5;i++)obelisk(-18+i*9,-58);
-for(let i=0;i<13;i++){const x=-90+Math.random()*180,z=-5+Math.random()*105;if(Math.abs(x)<18&&z<15)continue;palm(x,z)}
-for(let i=0;i<12;i++){const x=-95+Math.random()*190,z=-100+Math.random()*180;if(Math.abs(x)<20&&z<10)continue;house(x,z)}
-// rocky outcrops around the playable region
-for(let i=0;i<100;i++){let x=(Math.random()-.5)*260,z=(Math.random()-.5)*250;if(Math.abs(x)<95&&Math.abs(z)<95)continue;let r=1+Math.random()*3;const b=new THREE.Mesh(new THREE.DodecahedronGeometry(r,0),i%2?stone:stoneDark);b.position.set(x,r*.55,z);b.scale.y=.5;b.castShadow=true;scene.add(b)}
-// distant dune ridges
-for(let i=0;i<18;i++){const x=(i-9)*28;const d=new THREE.Mesh(new THREE.SphereGeometry(1,12,8),sandLight);d.scale.set(25,5,12);d.position.set(x,1,-145-Math.random()*35);scene.add(d)}
-// player model
-const player=new THREE.Group();scene.add(player);
-const skin=mat(0x9b603e),hair=mat(0x211b18),white=mat(0xe4d5b5),red=mat(0x8c3428);
-const torso=new THREE.Mesh(new THREE.CylinderGeometry(.42,.52,1.05,9),white);torso.position.y=1.45;torso.castShadow=true;player.add(torso);
-const belt=new THREE.Mesh(new THREE.CylinderGeometry(.53,.53,.17,9),gold);belt.position.y=1.05;player.add(belt);
-const head=new THREE.Mesh(new THREE.SphereGeometry(.34,12,10),skin);head.position.y=2.25;head.castShadow=true;player.add(head);
-const haircap=new THREE.Mesh(new THREE.SphereGeometry(.35,12,8,0,Math.PI*2,0,Math.PI*.55),hair);haircap.position.y=2.34;player.add(haircap);
-const skirt=new THREE.Mesh(new THREE.ConeGeometry(.62,.65,4),white);skirt.position.y=.83;skirt.rotation.y=Math.PI/4;player.add(skirt);
-const arms=[],legs=[];
-for(const s of [-1,1]){const arm=new THREE.Mesh(new THREE.CylinderGeometry(.13,.16,.8,7),skin);arm.position.set(s*.55,1.48,0);arm.rotation.z=-s*.13;arm.castShadow=true;player.add(arm);arms.push(arm);
-const leg=new THREE.Mesh(new THREE.CylinderGeometry(.17,.19,.72,7),skin);leg.position.set(s*.22,.35,0);leg.castShadow=true;player.add(leg);legs.push(leg)}
-// scarf and shoulder sash
-const sash=box(.22,1.2,.12,red,-.26,1.55,.29);sash.rotation.z=-.18;sash.rotation.x=-.18;player.position.set(0,0,13);
-const shadowDisc=new THREE.Mesh(new THREE.CircleGeometry(1,20),new THREE.MeshBasicMaterial({color:0x473321,transparent:true,opacity:.18}));shadowDisc.rotation.x=-Math.PI/2;shadowDisc.scale.set(1.1,.55,1);shadowDisc.position.y=.025;player.add(shadowDisc);
-const artifacts=[];
-function artifact(x,z,index){
- const group=new THREE.Group();group.position.set(x,1.25,z);
- const ring=new THREE.Mesh(new THREE.TorusGeometry(.55,.12,8,20),gold);ring.rotation.x=Math.PI/2;group.add(ring);
- const gem=new THREE.Mesh(new THREE.OctahedronGeometry(.42),blue);gem.position.y=.15;gem.castShadow=true;group.add(gem);
- const glow=new THREE.PointLight(0xffc85a,1.1,7);glow.position.y=.3;group.add(glow);scene.add(group);artifacts.push({group,index,got:false});
-}
-artifact(-34,7,0);artifact(36,8,1);artifact(-62,-36,2);artifact(61,-48,3);artifact(0,-70,4);artifact(83,47,5);
-const npcs=[];
-function npc(x,z,color=0x376b68){
- const g=new THREE.Group();const body=new THREE.Mesh(new THREE.CylinderGeometry(.35,.42,1.1,8),mat(color));body.position.y=1.35;g.add(body);
- const h=new THREE.Mesh(new THREE.SphereGeometry(.29,10,8),skin);h.position.y=2.1;g.add(h);
- const hat=new THREE.Mesh(new THREE.ConeGeometry(.35,.4,8),gold);hat.position.y=2.42;g.add(hat);g.position.set(x,0,z);scene.add(g);npcs.push(g);
-}
-npc(12,-15);npc(-40,-10,0x9a4730);npc(45,35,0x536c39);
-let found=0,toastTimer=0;
-function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2100)}
-// camera orbit
-let yaw=0,pitch=.22,camDrag=false,lastX=0,lastY=0;
-renderer.domElement.addEventListener('pointerdown',e=>{if(e.clientX<innerWidth*.43)return;camDrag=true;lastX=e.clientX;lastY=e.clientY;renderer.domElement.setPointerCapture(e.pointerId)});
-renderer.domElement.addEventListener('pointermove',e=>{if(!camDrag)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;yaw-=dx*.006;pitch=THREE.MathUtils.clamp(pitch+dy*.003,-.12,.75)});
-renderer.domElement.addEventListener('pointerup',()=>camDrag=false);
-renderer.domElement.addEventListener('pointercancel',()=>camDrag=false);
-// joystick
-const stick=document.getElementById('stick'),nub=document.getElementById('nub');let joy={x:0,y:0},joyOn=false;
-function setJoy(e){const r=stick.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let x=(e.clientX-cx)/48,y=(e.clientY-cy)/48;const l=Math.hypot(x,y);if(l>1){x/=l;y/=l}joy.x=x;joy.y=y;nub.style.transform=`translate(${x*39}px,${y*39}px)`}
-stick.addEventListener('pointerdown',e=>{joyOn=true;stick.setPointerCapture(e.pointerId);setJoy(e)});
-stick.addEventListener('pointermove',e=>{if(joyOn)setJoy(e)});
-function endJoy(){joyOn=false;joy.x=joy.y=0;nub.style.transform='translate(0,0)'}
-stick.addEventListener('pointerup',endJoy);stick.addEventListener('pointercancel',endJoy);
-let sprint=false;document.getElementById('run').addEventListener('pointerdown',()=>sprint=true);document.getElementById('run').addEventListener('pointerup',()=>sprint=false);document.getElementById('run').addEventListener('pointerleave',()=>sprint=false);
-function inspect(){
- let nearest=null,dist=1e9;
- for(const a of artifacts){if(a.got)continue;const d=player.position.distanceTo(a.group.position);if(d<dist){dist=d;nearest=a}}
- if(nearest&&dist<5){nearest.got=true;scene.remove(nearest.group);found++;document.getElementById('found').textContent=found;toast(found===6?'Bütün eserleri buldun! Görev tamamlandı.':'Kutsal eser bulundu!');if(found===6)document.getElementById('objective').innerHTML='<b>GÖREV TAMAMLANDI</b>Antik Mısır’ın sırlarını keşfettin.'}
- else toast('Yakında incelenecek bir eser yok.');
-}
-document.getElementById('interact').addEventListener('click',inspect);
-const keys={};addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(e.key.toLowerCase()==='e')inspect()});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
-function blocked(x,z){for(const c of colliders){const dx=x-c.x,dz=z-c.z;if(dx*dx+dz*dz<(c.r+.72)**2)return true}return Math.abs(x)>128||Math.abs(z)>128}
-const clock=new THREE.Clock();let walk=0;
-function animate(){
- requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.04);
- let ix=joy.x+(keys.d?1:0)-(keys.a?1:0),iy=joy.y+(keys.s?1:0)-(keys.w?1:0);
- const len=Math.hypot(ix,iy);if(len>1){ix/=len;iy/=len}
- const moving=len>.08,fast=sprint||keys.shift;
- const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw)),right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
- const move=forward.multiplyScalar(-iy).add(right.multiplyScalar(ix));
- if(moving){const speed=fast?10:5.6;const nx=player.position.x+move.x*speed*dt,nz=player.position.z+move.z*speed*dt;
- if(!blocked(nx,player.position.z))player.position.x=nx;
- if(!blocked(player.position.x,nz))player.position.z=nz;
- player.rotation.y=Math.atan2(move.x,move.z);walk+=dt*(fast?13:8);
- }else walk=0;
- legs.forEach((l,i)=>l.rotation.x=moving?Math.sin(walk+i*Math.PI)*.55:0);
- arms.forEach((a,i)=>a.rotation.x=moving?-Math.sin(walk+i*Math.PI)*.45:0);
- artifacts.forEach(a=>{if(!a.got){a.group.rotation.y+=dt*.7;a.group.position.y=1.25+Math.sin(clock.elapsedTime*2+a.index)*.15}});
- npcs.forEach((n,i)=>{n.rotation.y=Math.sin(clock.elapsedTime*.35+i)*.25});
- const target=new THREE.Vector3(player.position.x,1.55,player.position.z);
- const distance=fast?10:11.5;
- const offset=new THREE.Vector3(Math.sin(yaw)*distance,4.3+pitch*5,Math.cos(yaw)*distance);
- camera.position.lerp(target.clone().add(offset),1-Math.pow(.001,dt));camera.lookAt(target);
- renderer.render(scene,camera);
-}
-animate();
-setTimeout(()=>{document.getElementById('loading').style.display='none';toast('Keşfe hoş geldin. İlk eseri bul!')},1100);
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.65))});
-document.addEventListener('contextmenu',e=>e.preventDefault());
-</script>
-</body>
-</html>
+import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
+const $=id=>document.getElementById(id),root=$('game');
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bc4d5);scene.fog=new THREE.Fog(0xd9b77f,.003,260);
+const camera=new THREE.PerspectiveCamera( sixty=62,innerWidth/innerHeight,.1,500);
+const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.35));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;root.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xffe7c0,0x705037,2));const sun=new THREE.DirectionalLight(0xffdfaa,2.3);sun.position.set(-45,80,35);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
+const mat=(c,r=.9)=>new THREE.MeshStandardMaterial({color:c,roughness:r});const sand=mat(0xd6ad70),dark=mat(0x51402f),stone=mat(0xb9a078),water= new THREE.MeshStandardMaterial({color:0x3d9caa,roughness:.25});
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(500,500),sand);ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
+// Dune ridges
+for(let i=0;i<24;i++){let d=new THREE.Mesh(new THREE.SphereGeometry(1,12,8),mat(i%2?0xc99d60:0xe0bd83));d.scale.set(18+Math.random()*25,2+Math.random()*4,8+Math.random()*15);d.position.set((Math.random()-.5)*300,-1.5,-70-Math.random()*220);scene.add(d)}
+// Oasis
+const pool=new THREE.Mesh(new THREE.CircleGeometry(13,40),water);pool.rotation.x=-Math.PI/2;pool.position.set(24,.04,-28);scene.add(pool);
+const palm=(x,z)=>{let g=new THREE.Group();let trunk=new THREE.Mesh(new THREE.CylinderGeometry(.35,.55,7,7),mat(0x77502e));trunk.position.y=3.5;g.add(trunk);for(let j=0;j<8;j++){let leaf=new THREE.Mesh(new THREE.ConeGeometry(.65,7,5),mat(0x46643a));leaf.position.set(Math.cos(j*Math.PI/4)*2,7,Math.sin(j*Math.PI/4)*2);leaf.rotation.z=-Math.PI/2.6;leaf.rotation.y=j*Math.PI/4;g.add(leaf)}g.position.set(x,0,z);scene.add(g)};
+for(let i=0;i<12;i++){let a=i*Math.PI/6;palm(24+Math.cos(a)*17,-28+Math.sin(a)*17)}
+// Decorative village built-in fallback structures
+function house(x,z){let g=new THREE.Group();let b=new THREE.Mesh(new THREE.BoxGeometry(9,5,8),mat(0xb78b5c));b.position.y=2.5;g.add(b);let roof=new THREE.Mesh(new THREE.BoxGeometry(9.8,.7,8.8),mat(0x8a6344));roof.position.y=5.2;g.add(roof);let door=new THREE.Mesh(new THREE.BoxGeometry(1.5,2.7,.15),dark);door.position.set(0,1.35,4.08);g.add(door);g.position.set(x,0,z);scene.add(g)}
+for(let i=0;i<9;i++)house(-35+(i%3)*12,-25-Math.floor(i/3)*12);
+// Player
+const player=new THREE.Group();const body=new THREE.Mesh(new THREE.CapsuleGeometry(.48,1.05,4,8),mat(0x8b3e25));body.position.y=1.05;player.add(body);const head=new THREE.Mesh(new THREE.SphereGeometry(.34,12,10),mat(0x9b6847));head.position.y=1.95;player.add(head);const cloth=new THREE.Mesh(new THREE.BoxGeometry(1.05,.22,.65),mat(0xd7c08e));cloth.position.set(0,1.5,0);player.add(cloth);player.position.set(0,0,8);scene.add(player);
+// NPCs
+for(let i=0;i<5;i++){let n=new THREE.Group();let robe=new THREE.Mesh(new THREE.CapsuleGeometry(.42,.9,3,7),mat([0x6e4b36,0x8c7650,0x4d5542][i%3]));robe.position.y=.95;n.add(robe);let h=new THREE.Mesh(new THREE.SphereGeometry(.3,10,8),mat(0x986b4a));h.position.y=1.8;n.add(h);n.position.set(-20+i*10,0,-18-(i%2)*8);scene.add(n)}
+// GLB asset placement: real repository models loaded from root
+const loader=new GLTFLoader();let loaded=0;const assets=[
+['desert-step-pyramid.glb',-65,-95,1.7],['great-sandstone-sphinx.glb',-42,-83,1.5],['desert-temple-hall.glb',5,-115,1.5],['pharaoh-colossi-gate.glb',5,-92,1.2],['desert-tomb-entrance.glb',68,-72,1.4],['desert-city-gate.glb',-18,-48,1.1],['mud-brick-desert-house.glb',-42,-12,1.2],['desert-bazaar-stall.glb',-22,-12,1.1],['desert-oasis-camp.glb',38,-35,1.1],['desert-throne-room.glb',78,-118,1.2],['desert-animals-set.glb',44,-15,1],['desert-tomb-terrain-kit.glb',92,-80,1.2],['desert-obelisk-set.glb',-5,-72,1.1],['sandstone-ruin-kit.glb',-85,-40,1.2],['desert-relics-set.glb',20,-65,1],['desert-camel-caravan.glb',-52,18,1],['desert-carved-tablets.glb',-75,-65,1],['desert-tent-camp.glb',56,12,1],['royal-desert-sarcophagus.glb',80,-90,1],['desert-well.glb',-6,18,1],['desert-dig-site.glb',100,-25,1],['buried-reed-boat.glb',-105,-35,1],['desert-treasure-vault.glb',110,-115,1],['tomb-trap-corridor.glb',94,-105,1]
+];
+function progress(){ $('progress').style.width=Math.round(loaded/assets.length*100)+'%';$('loadtext').textContent=`Antik yapılar yükleniyor… ${loaded}/${assets.length}` }
+for(const [file,x,z,s] of assets){loader.load('./'+file,g=>{const m=g.scene;m.scale.setScalar(s);m.position.set(x,0,z);m.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});scene.add(m);loaded++;progress()},undefined,()=>{loaded++;progress()})}
+// Relic markers
+const relics=[];for(let i=0;i<6;i++){let g=new THREE.Group();let base=new THREE.Mesh(new THREE.CylinderGeometry(.65,.8,.22,8),mat(0x6c4a2d));base.position.y=.12;g.add(base);let gem=new THREE.Mesh(new THREE.OctahedronGeometry(.55),new THREE.MeshStandardMaterial({color:0xe8bd55,metalness:.65,roughness:.25,emissive:0x6b3900}));gem.position.y=1;g.add(gem);g.position.set([-62,-38,10,54,83,112][i],0,[-65,-8,-55,-88,-42,-105][i]);scene.add(g);relics.push({g,found:false})}
+let found=0;const toast=t=>{$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2200)};
+// Controls
+let joy={x:0,y:0},running=false,yaw=0,drag=null;const stick=$('stick'),nub=$('nub');stick.addEventListener('pointerdown',e=>{stick.setPointerCapture(e.pointerId);moveJoy(e)});stick.addEventListener('pointermove',e=>{if(e.buttons)moveJoy(e)});function moveJoy(e){let r=stick.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),len=Math.hypot(dx,dy),max=39;if(len>max){dx*=max/len;dy*=max/len}joy.x=dx/max;joy.y=dy/max;nub.style.transform=`translate(${dx}px,${dy}px)`}function resetJoy(){joy={x:0,y:0};nub.style.transform='translate(0,0)'}stick.addEventListener('pointerup',resetJoy);stick.addEventListener('pointercancel',resetJoy);$('run').addEventListener('pointerdown',()=>running=true);$('run').addEventListener('pointerup',()=>running=false);$('run').addEventListener('pointerleave',()=>running=false);
+renderer.domElement.addEventListener('pointerdown',e=>{if(e.clientX>innerWidth*.42)drag={x:e.clientX,y:e.clientY}});renderer.domElement.addEventListener('pointermove',e=>{if(drag){yaw-=(e.clientX-drag.x)*.006;drag={x:e.clientX,y:e.clientY}}});renderer.domElement.addEventListener('pointerup',()=>drag=null);
+$('interact').onclick=()=>{let near=null,dist=999;for(const r of relics){let d=player.position.distanceTo(r.g.position);if(!r.found&&d<dist){dist=d;near=r}}if(near&&dist<5){near.found=true;near.g.visible=false;found++;$('found').textContent=found;toast(found===6?'Bütün eserler bulundu! Tapınağa dön.':`Kutsal eser bulundu (${found}/6)`)}else toast('Yakında incelenecek bir eser yok.');};
+let camTarget=new THREE.Vector3();const clock=new THREE.Clock();function animate(){requestAnimationFrame(animate);let dt=Math.min(clock.getDelta(),.04);for(const r of relics)if(!r.found)r.g.rotation.y+=dt*.8;let speed=running?12:6;let forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw)),right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));let move=forward.clone().multiplyScalar(-joy.y).add(right.multiplyScalar(joy.x));if(move.lengthSq()>.01){move.normalize();player.position.addScaledVector(move,speed*dt);player.rotation.y=Math.atan2(move.x,move.z)}let desired=new THREE.Vector3(player.position.x+Math.sin(yaw)*8,player.position.y+5.2,player.position.z+Math.cos(yaw)*8);camera.position.lerp(desired,.12);camTarget.set(player.position.x,1.3,player.position.z);camera.lookAt(camTarget);renderer.render(scene,camera)}
+let ready=false;const reveal=()=>{if(ready)return;ready=true;$('loading').style.opacity=0;setTimeout(()=>$('loading').remove(),650);toast('Keşif başladı. Eserleri bul!')};setTimeout(reveal,8500);let check=setInterval(()=>{if(loaded===assets.length){clearInterval(check);reveal()}},250);
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});animate();
+</script></body></html>
