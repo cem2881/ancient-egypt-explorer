@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#19150f">
-<title>MEDJAY 4.1 — Nil Vadisi ve Antik Şehir</title>
+<title>MEDJAY 4.4 — Nil Vadisi Yenilemesi</title>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 <style>
 :root{--gold:#edcc83;--glass:rgba(16,19,20,.82);--edge:rgba(237,204,131,.48)}
@@ -21,12 +21,12 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#9f8056;col
 #counter strong{color:var(--gold);font-variant-numeric:tabular-nums}
 #toast{position:absolute;left:50%;top:25%;max-width:86vw;transform:translate(-50%,-9px);opacity:0;transition:.22s;background:var(--glass);border:1px solid var(--edge);padding:11px 16px;border-radius:12px;font-size:12px;text-align:center;white-space:normal}
 #toast.show{opacity:1;transform:translate(-50%,0)}
-#stick{position:absolute;left:max(19px,env(safe-area-inset-left));bottom:max(18px,env(safe-area-inset-bottom));width:clamp(88px,17vw,126px);height:clamp(88px,17vw,126px);border:1px solid #fff9;border-radius:50%;background:radial-gradient(circle,#ffffff20,#15110b70);box-shadow:0 6px 22px #0006,inset 0 0 18px #fff2;pointer-events:auto;touch-action:none}
-#nub{position:absolute;left:29%;top:29%;width:42%;height:42%;border-radius:50%;border:2px solid #fff;background:linear-gradient(145deg,#fff,#bdb8ac);box-shadow:0 4px 12px #0008}
-.actions{position:absolute;right:max(18px,env(safe-area-inset-right));bottom:max(20px,env(safe-area-inset-bottom));display:flex;gap:clamp(8px,1.8vw,13px);align-items:flex-end;pointer-events:auto}
-button{width:clamp(52px,9.5vw,68px);height:clamp(52px,9.5vw,68px);border-radius:50%;border:1px solid var(--edge);background:linear-gradient(145deg,#6e542f,#211b13);color:#fff;font:850 10px system-ui;letter-spacing:.6px;box-shadow:0 5px 17px #0008;touch-action:none}
-button.primary{width:clamp(62px,10.5vw,78px);height:clamp(62px,10.5vw,78px);background:linear-gradient(145deg,#b58d4c,#624725)}
-button:active,button.active{filter:brightness(1.4);transform:scale(.96)}
+#stick{position:absolute;left:max(19px,env(safe-area-inset-left));bottom:max(18px,env(safe-area-inset-bottom));width:clamp(88px,17vw,126px);height:clamp(88px,17vw,126px);border:1px solid #fff9;border-radius:50%;background:radial-gradient(circle at 35% 28%,#ffffff30,#17120dba 72%);box-shadow:0 8px 24px #0008,inset 0 0 20px #fff2;pointer-events:auto;touch-action:none}
+#nub{position:absolute;left:29%;top:29%;width:42%;height:42%;border-radius:50%;border:2px solid #f5dfb5;background:radial-gradient(circle at 32% 25%,#fff8e9,#b18c57 72%);box-shadow:0 4px 12px #0009,inset 0 2px 4px #fff8;pointer-events:none}
+.actions{position:absolute;right:max(18px,env(safe-area-inset-right));bottom:max(20px,env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(3,clamp(48px,8vw,62px));grid-template-rows:repeat(2,clamp(48px,8vw,62px));gap:8px;align-items:center;justify-items:center;pointer-events:auto}
+button{width:clamp(48px,8vw,62px);height:clamp(48px,8vw,62px);border-radius:19px;border:1px solid #e7c987aa;background:linear-gradient(145deg,#67533a,#201a14);color:#fff;font:900 9px system-ui;letter-spacing:.45px;box-shadow:0 5px 16px #0009,inset 0 1px 0 #fff3;touch-action:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+button.primary{width:clamp(58px,9vw,70px);height:clamp(58px,9vw,70px);border-radius:22px;background:linear-gradient(145deg,#c69b55,#694a25);grid-column:3;grid-row:2}
+button:active,button.active{filter:brightness(1.35);transform:translateY(2px) scale(.96);box-shadow:0 2px 7px #0009,inset 0 2px 5px #0005}
 #help{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);font-size:9px;color:#fffC;white-space:nowrap}
 #loading{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse at 50% 42%,#705438,#19150f 76%);text-align:center;transition:opacity .4s}
 .loadcard{width:min(360px,92vw);padding:25px 23px;border:1px solid var(--edge);border-radius:18px;background:#12191deF;box-shadow:0 18px 55px #0009}
@@ -49,12 +49,12 @@ button:active,button.active{filter:brightness(1.4);transform:scale(.96)}
 <div id="game"></div>
 <div id="rotate">MEDJAY'i oynamak için telefonu yatay çevir.</div>
 <div id="hud">
-  <div class="brand">MEDJAY<small>ANTİK MISIR KEŞFİ · 4.1</small></div>
+  <div class="brand">MEDJAY<small>ANTİK MISIR KEŞFİ · 4.4</small></div>
   <div class="panel"><b id="missionLabel">ANA GÖREV</b><span id="mission">Altı kutsal eseri bul ve Karnak Tapınağı'na ulaş.</span></div>
   <div id="counter">KUTSAL ESERLER &nbsp;<strong><span id="found">0</span> / 6</strong></div>
   <div id="toast"></div>
   <div id="stick"><div id="nub"></div></div>
-  <div class="actions"><button id="run">KOŞ</button><button id="jump">ZIPLA</button><button id="scout">KARTAL</button><button class="primary" id="act">İNCELE</button></div>
+  <div class="actions"><button id="run"><span>⇧</span>KOŞ</button><button id="jump"><span>↟</span>ZIPLA</button><button id="scout"><span>✦</span>KARTAL</button><button class="primary" id="act"><span>◎</span>İNCELE</button></div>
   <div id="help">SOL JOYSTICK: HAREKET &nbsp; • &nbsp; SAĞ TARAFI SÜRÜKLE: KAMERA &nbsp; • &nbsp; KARTAL: HAVADAN KEŞİF &nbsp; • &nbsp; İNCELE: ETKİLEŞİM</div>
 </div>
 <div id="loading"><div class="loadcard"><h1>MEDJAY</h1><p id="loadtext">Gerçek 3D Mısır dünyası hazırlanıyor…</p><div id="loadbar"><div id="loadfill"></div></div><button id="retry">TEKRAR DENE</button></div></div>
@@ -81,7 +81,8 @@ import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js')
 function startGame(THREE){
   const root = $('game');
   let renderer, scene, camera, clock, player;
-  let yaw = 0, pitch = .2, joy = {x:0,y:0}, running = false;
+  let yaw = 0, pitch = .16, joy = {x:0,y:0}, running = false;
+  let moveVelocity = new THREE.Vector3(), gaitPhase = 0, cameraShake = 0;
   let jumpVelocity = 0, grounded = true, lookPointer = null;
   let found = 0, gameWon = false, scouting = false, scoutUntil = 0;
   const relics = [];
@@ -91,6 +92,9 @@ function startGame(THREE){
   let scoutBird=null;
   const npcWanderers = [];
   const up = new THREE.Vector3(0,1,0);
+  const cameraRay = new THREE.Raycaster();
+  const cameraBlockers = [];
+  let cameraCurrent = new THREE.Vector3();
 
   const mat = (color, roughness=.88, metalness=0) =>
     new THREE.MeshStandardMaterial({color, roughness, metalness});
@@ -122,96 +126,96 @@ function startGame(THREE){
     add(new THREE.SphereGeometry(radius,segments,Math.max(8,segments-2)),material,x,y,z,parent);
 
   function makeMedjay(){
-    const g=new THREE.Group(), legs=[], arms=[];
-    const bronze=mat(0x8b6035,.48,.55), leatherDark=mat(0x39271d), clothRed=mat(0x74382b);
-    // Legs, sandals and articulated knees
+    const g=new THREE.Group();
+    const legs=[], arms=[], lowerLegs=[], forearms=[];
+    const bronze=mat(0x927044,.42,.48), darkLeather=mat(0x34251d), redCloth=mat(0x74382b);
+    const skin=mat(0x986847), skinLight=mat(0xb17b55), linen=mat(0xd9c69d);
+    // Pelvis and layered linen kilt.
+    const pelvis=add(new THREE.CapsuleGeometry(.29,.28,5,12),darkLeather,0,1.22,0,g);
+    const torso=add(new THREE.CapsuleGeometry(.34,.72,7,16),skin,0,1.83,0,g);
+    torso.scale.set(1,.98,.88);
+    const chest=add(new THREE.CapsuleGeometry(.34,.43,6,14),linen,0,1.93,.12,g);
+    chest.scale.set(1.08,.92,.78);
+    const kilt=add(new THREE.CylinderGeometry(.32,.5,.72,16),linen,0,1.12,0,g);
+    box(.48,.58,.09,mat(0xb8a17a),0,1.02,.29,g);
     for(const side of [-1,1]){
-      const leg=new THREE.Group(); leg.position.set(side*.19,.84,0);
-      add(new THREE.CapsuleGeometry(.115,.56,5,10),M.skin,0,-.25,0,leg);
-      const knee=sphere(.12,M.skin,0,-.02,.015,leg,10);
-      box(.28,.1,.43,leatherDark,0,-.62,.075,leg);
-      box(.29,.055,.28,M.gold,0,-.56,.12,leg);
-      const shinGuard=box(.22,.32,.08,bronze,0,-.36,.115,leg);
-      g.add(leg); legs.push(leg);
+      const panel=box(.17,.56,.07,redCloth,side*.3,1.08,.04,g);panel.rotation.z=side*.1;
+      const beltPouch=box(.18,.22,.16,darkLeather,side*.3,1.3,-.23,g);
+      beltPouch.rotation.z=side*.12;
+      sphere(.045,M.gold,side*.3,1.32,-.32,g,8);
     }
-    // Arms with leather/bronze bracers
+    box(.72,.14,.48,darkLeather,0,1.43,0,g);
+    box(.76,.075,.5,M.gold,0,1.5,0,g);
+    // Layered shoulder harness and chest medallion.
+    const strap=box(.11,1.08,.09,darkLeather,-.13,1.9,.31,g);strap.rotation.z=-.4;
+    const strapTrim=box(.025,1.04,.025,M.gold,-.19,1.91,.36,g);strapTrim.rotation.z=-.4;
+    const med=cyl(.115,.115,.06,M.gold,.15,1.7,.36,g,12);med.rotation.x=Math.PI/2;
+    // Articulated legs: thigh pivots at hips, knees swing independently.
     for(const side of [-1,1]){
-      const arm=new THREE.Group(); arm.position.set(side*.39,1.9,0);
-      const upper=add(new THREE.CapsuleGeometry(.115,.48,5,10),M.skin,0,-.24,0,arm);
-      upper.rotation.z=side*.12;
-      const bracer=cyl(.135,.12,.32,bronze,0,-.47,.01,arm,10);
-      const trim=cyl(.14,.14,.055,M.gold,0,-.33,.01,arm,10);
-      const wrist=cyl(.13,.13,.09,M.gold,0,-.63,.01,arm,10);
-      g.add(arm); arms.push(arm);
+      const hip=new THREE.Group();hip.position.set(side*.19,1.02,0);g.add(hip);
+      const thigh=add(new THREE.CapsuleGeometry(.135,.43,5,10),skin,0,-.29,0,hip);
+      const knee=sphere(.125,skinLight,0,-.54,.015,hip,10);
+      const shin=new THREE.Group();shin.position.set(0,-.55,0);hip.add(shin);
+      add(new THREE.CapsuleGeometry(.105,.42,5,10),skin,0,-.26,0,shin);
+      const guard=box(.2,.34,.075,bronze,0,-.27,.105,shin);
+      box(.28,.09,.42,darkLeather,0,-.55,.1,shin);
+      box(.29,.045,.28,M.gold,0,-.5,.14,shin);
+      legs.push(hip);lowerLegs.push(shin);
     }
-    // Tunic, chest armor and layered waist cloth
-    add(new THREE.CapsuleGeometry(.34,.66,6,14),M.linenShade,0,1.68,0,g);
-    const chest=add(new THREE.CapsuleGeometry(.31,.38,5,12),mat(0x806044),0,1.82,.12,g);
-    chest.scale.set(1.02,.9,.82);
-    box(.68,.16,.46,leatherDark,0,1.32,0,g);
-    box(.74,.12,.49,M.gold,0,1.42,0,g);
-    const kilt=add(new THREE.CylinderGeometry(.34,.48,.68,12),M.linen,0,1.08,0,g);
-    const frontPanel=box(.43,.58,.075,M.linenShade,0,1.02,.25,g);
-    frontPanel.rotation.x=-.12;
-    const sideCloth=box(.16,.57,.08,clothRed,.34,1.04,.06,g);sideCloth.rotation.z=-.12;
-    // Diagonal chest strap and medallion
-    const strap=box(.105,1.12,.09,leatherDark,-.12,1.75,.31,g);strap.rotation.z=-.42;
-    const strapEdge=box(.035,1.1,.025,M.gold,-.18,1.76,.365,g);strapEdge.rotation.z=-.42;
-    const medallion=cyl(.12,.12,.06,M.gold,.16,1.57,.39,g,12);medallion.rotation.x=Math.PI/2;
-    // Shoulder guards
+    // Arms with shoulder, elbow and wrist articulation.
     for(const side of [-1,1]){
-      const pad=sphere(.2,bronze,side*.38,2.02,0,g,12);pad.scale.set(1,.58,.95);
-      sphere(.07,M.gold,side*.39,2.1,.13,g,8);
+      const shoulder=new THREE.Group();shoulder.position.set(side*.39,2.13,0);g.add(shoulder);
+      const pad=sphere(.19,bronze,0,0,0,shoulder,12);pad.scale.set(1,.65,.95);
+      add(new THREE.CapsuleGeometry(.115,.38,5,10),skin,0,-.27,0,shoulder);
+      const elbow=new THREE.Group();elbow.position.set(0,-.52,0);shoulder.add(elbow);
+      add(new THREE.CapsuleGeometry(.095,.34,5,10),skinLight,0,-.23,0,elbow);
+      cyl(.13,.12,.22,bronze,0,-.39,.015,elbow,10);
+      cyl(.14,.14,.055,M.gold,0,-.3,.015,elbow,10);
+      sphere(.085,skin,0,-.47,.025,elbow,10);
+      arms.push(shoulder);forearms.push(elbow);
     }
-    // Back cape, split lower tails
-    const capeMat=clothRed.clone();capeMat.side=THREE.DoubleSide;
+    // Anatomical chest definition, shoulder muscles and layered linen pleats.
+    for(const side of [-1,1]){
+      const pectoral=sphere(.205,skin,side*.17,2.02,.205,g,12); pectoral.scale.set(1.08,.58,.5);
+      const deltoid=sphere(.17,skin,side*.39,2.12,.015,g,12); deltoid.scale.set(1,.9,.92);
+      const kiltFold=box(.055,.55,.035,mat(0xb7a17d),side*.12,1.1,.36,g); kiltFold.rotation.z=side*.08;
+      const sandal=box(.3,.09,.48,darkLeather,side*.19,.075,.08,g);
+      box(.28,.035,.12,M.gold,side*.19,.13,.22,g);
+    }
+    // Linen waist sash and small stitched borders.
+    const sash=box(.82,.12,.54,redCloth,0,1.39,.02,g);
+    for(let i=0;i<7;i++) box(.018,.52,.025,M.gold,-.27+i*.09,1.08,.34,g);
+    // Neck, face, hair and Egyptian nemes headcloth.
+    cyl(.13,.14,.22,skin,0,2.27,0,g,12);
+    sphere(.225,skin,0,2.53,0,g,16);
+    sphere(.238,M.black,0,2.57,0,g,16).scale.set(1,.82,1);
+    add(new THREE.SphereGeometry(.27,18,12,0,Math.PI*2,0,Math.PI*.58),M.blue,0,2.6,0,g);
+    for(const side of [-1,1]){
+      const flap=box(.19,.66,.18,M.blue,side*.25,2.13,.005,g);flap.rotation.z=side*.1;
+      for(let i=0;i<3;i++)box(.2,.032,.19,M.gold,side*.25,2.4-i*.14,.105,g);
+      sphere(.027,M.gold,side*.2,2.62,.17,g,8);
+      sphere(.045,mat(0xe4d6b8),side*.09,2.54,.205,g,10);
+      sphere(.022,M.black,side*.09,2.54,.242,g,8);
+      sphere(.052,skinLight,side*.225,2.48,.015,g,9);
+      box(.08,.02,.03,M.black,side*.09,2.59,.205,g);
+      const brow=box(.095,.026,.03,M.black,side*.09,2.62,.205,g);brow.rotation.z=side*.08;
+    }
+    const nose=add(new THREE.ConeGeometry(.04,.12,6),skinLight,0,2.5,.22,g);nose.rotation.x=Math.PI/2;
+    const beard=add(new THREE.ConeGeometry(.06,.18,8),M.black,0,2.31,.19,g);beard.rotation.x=-.12;
+    // Cape, quiver and curved bow on the back.
     const capeGeo=new THREE.BufferGeometry();
-    const capeVerts=new Float32Array([
-      -.28,2.03,-.16, .28,2.03,-.16,
-      -.48,.58,-.35, .48,.58,-.35,
-      -.28,.15,-.26, .28,.15,-.26
-    ]);
-    capeGeo.setAttribute('position',new THREE.BufferAttribute(capeVerts,3));
+    capeGeo.setAttribute('position',new THREE.Float32BufferAttribute([-.28,2.1,-.16,.28,2.1,-.16,-.48,.55,-.35,.48,.55,-.35,-.28,.12,-.26,.28,.12,-.26],3));
     capeGeo.setIndex([0,2,1,1,2,3,2,4,3,3,4,5]);capeGeo.computeVertexNormals();
-    const cape=new THREE.Mesh(capeGeo,capeMat);cape.castShadow=true;g.add(cape);
-    // Head, wrapped nemes-style headcloth and face details
-    cyl(.13,.14,.22,M.skin,0,2.16,0,g,12);
-    sphere(.225,M.skin,0,2.42,0,g,16);
-    const hair=sphere(.238,M.black,0,2.45,0,g,16);hair.scale.set(1,.82,1);
-    const cap=add(new THREE.SphereGeometry(.27,18,12,0,Math.PI*2,0,Math.PI*.58),M.blue,0,2.48,0,g);
-    for(const side of [-1,1]){
-      const flap=box(.19,.68,.18,M.blue,side*.25,2.03,.005,g);flap.rotation.z=side*.1;
-      for(let i=0;i<3;i++)box(.2,.035,.19,M.gold,side*.25,2.28-i*.14,.105,g);
-      sphere(.028,M.gold,side*.2,2.5,.17,g,8);
-    }
-    for(const x of [-.09,.09]){
-      sphere(.025,M.black,x,2.42,.205,g,8);
-      box(.075,.018,.025,M.black,x,2.47,.205,g);
-    }
-    const beard=add(new THREE.ConeGeometry(.065,.2,8),M.black,0,2.22,.19,g);beard.rotation.x=-.12;
-    // More complete Medjay silhouette: layered chest harness, arm bands, belt pouches and back gear.
-    for(const side of [-1,1]){
-      const band=cyl(.13,.13,.09,leatherDark,side*.39,1.72,.01,g,10); band.rotation.z=Math.PI/2;
-      const pouch=box(.19,.24,.16,leatherDark,side*.28,1.23,-.22,g); pouch.rotation.z=side*.12;
-      sphere(.045,M.gold,side*.28,1.25,-.31,g,8);
-    }
-    for(let i=0;i<4;i++){
-      const scale=box(.035,.34,.035,M.gold,-.18+i*.12,1.8,.365,g); scale.rotation.z=-.42;
-    }
-    // Shoulder leather straps and a compact bow/quiver on the back.
-    const quiver=cyl(.12,.16,.82,leatherDark,.27,1.72,-.34,g,10); quiver.rotation.x=-.18;
-    for(let i=0;i<3;i++)cyl(.17,.17,.045,M.gold,.27,1.45+i*.22,-.34,g,10);
-    const bow=add(new THREE.TorusGeometry(.42,.035,7,22,Math.PI),leatherDark,-.3,1.8,-.39,g);bow.rotation.z=Math.PI/2;
-    // Nose, eyebrows and cheek definition improve the face at normal camera distance.
-    const nose=add(new THREE.ConeGeometry(.045,.13,6),M.skin,0,2.39,.225,g);nose.rotation.x=Math.PI/2;
-    for(const x of [-.09,.09]){
-      const brow=box(.095,.028,.035,M.black,x,2.49,.205,g); brow.rotation.z=x<0?-.08:.08;
-    }
-    // Sword and sheath on the left hip
-    const sheath=box(.11,.78,.13,leatherDark,-.43,1.12,-.02,g);sheath.rotation.z=-.28;
-    const hilt=cyl(.045,.045,.28,M.gold,-.52,1.58,-.02,g,8);hilt.rotation.z=Math.PI/2;
-    box(.23,.06,.07,M.gold,-.52,1.57,-.02,g);
-    g.userData={legs,arms,cape};return g;
+    const cape=new THREE.Mesh(capeGeo,new THREE.MeshStandardMaterial({color:0x74382b,side:THREE.DoubleSide,roughness:.92}));g.add(cape);
+    const quiver=cyl(.12,.16,.78,darkLeather,.28,1.77,-.34,g,10);quiver.rotation.x=-.18;
+    for(let i=0;i<3;i++)cyl(.17,.17,.04,M.gold,.28,1.5+i*.2,-.34,g,10);
+    const bow=add(new THREE.TorusGeometry(.4,.03,7,24,Math.PI),darkLeather,-.3,1.82,-.39,g);bow.rotation.z=Math.PI/2;
+    // Sword sheath and hilt at the hip.
+    const sheath=box(.1,.72,.12,darkLeather,-.45,1.13,-.03,g);sheath.rotation.z=-.28;
+    cyl(.04,.04,.25,M.gold,-.53,1.56,-.03,g,8).rotation.z=Math.PI/2;
+    box(.22,.055,.06,M.gold,-.53,1.55,-.03,g);
+    g.userData={legs,arms,lowerLegs,forearms,cape};
+    return g;
   }
   function palm(x,z){
     cyl(.27,.42,6.5,mat(0x75502e),x,3.25,z);
@@ -411,50 +415,128 @@ function startGame(THREE){
   }
 
   function buildRiverAndFarmland(){
-    // A broad Nile branch bends along the eastern edge of the playable valley.
-    const riverMat=new THREE.MeshStandardMaterial({color:0x287f8d,roughness:.2,metalness:.05});
-    const bankMat=mat(0x9c875e,.98), wetSand=mat(0xb7a078,.95);
-    for(let i=0;i<22;i++){
-      const z=100-i*20;
-      const x=105+Math.sin(i*.34)*13;
-      const water=add(new THREE.CircleGeometry(15+(i%3)*2,40),riverMat,x,-.02,z);
-      water.rotation.x=-Math.PI/2;water.scale.set(1.25,.72,1);
-      const bank=add(new THREE.TorusGeometry(15+(i%3)*2,.75,5,40),bankMat,x,.04,z);
-      bank.rotation.x=Math.PI/2;bank.scale.set(1.25,.72,1);
-      // reeds and papyrus on both banks
-      for(let r=0;r<7;r++){
-        const a=r/7*Math.PI*2;
-        const rx=x+Math.cos(a)*17, rz=z+Math.sin(a)*13;
-        cyl(.035,.055,1.7,M.reed,rx,.85,rz,scene,5);
-        for(let leaf=0;leaf<3;leaf++){
-          const frond=add(new THREE.ConeGeometry(.11,.95,5),M.green,rx+Math.cos(a+leaf)*.2,1.55,rz+Math.sin(a+leaf)*.2);
-          frond.rotation.z=.35*Math.cos(a+leaf);frond.rotation.x=.35*Math.sin(a+leaf);
+    // Continuous, winding Nile channel: one connected water surface instead of separate discs.
+    const waterMat=new THREE.MeshStandardMaterial({
+      color:0x247f91,roughness:.2,metalness:.08,side:THREE.DoubleSide,
+      emissive:0x062b35,emissiveIntensity:.18
+    });
+    const shallowMat=new THREE.MeshStandardMaterial({color:0x789b83,roughness:.9,side:THREE.DoubleSide});
+    const wetMat=new THREE.MeshStandardMaterial({color:0xb39a70,roughness:1,side:THREE.DoubleSide});
+    const centerAt=z=>106+Math.sin(z*.024)*15+Math.sin(z*.008)*8;
+    const widthAt=z=>15.5+Math.sin(z*.031)*2.2;
+    const samples=[];
+    for(let z=142;z>=-350;z-=5.5) samples.push({x:centerAt(z),z});
+    function riverRibbon(widthFn, offset, y, material){
+      const verts=[],uv=[],idx=[];
+      for(let i=0;i<samples.length;i++){
+        const prev=samples[Math.max(0,i-1)],next=samples[Math.min(samples.length-1,i+1)];
+        const tx=next.x-prev.x,tz=next.z-prev.z,len=Math.hypot(tx,tz)||1;
+        const nx=tz/len,nz=-tx/len;
+        const w=widthFn(samples[i].z);
+        for(const side of [-1,1]){
+          const d=offset+side*w;
+          verts.push(samples[i].x+nx*d,y,samples[i].z+nz*d);
+          uv.push(side*.5+.5,i/(samples.length-1)*18);
+        }
+      }
+      for(let i=0;i<samples.length-1;i++){
+        const a=i*2,b=a+2;idx.push(a,b,a+1,b,b+1,a+1);
+      }
+      const geo=new THREE.BufferGeometry();
+      geo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));
+      geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+      geo.setIndex(idx);geo.computeVertexNormals();
+      const mesh=new THREE.Mesh(geo,material);mesh.receiveShadow=true;scene.add(mesh);return mesh;
+    }
+    // Soft muddy shallows and wet sand frame both banks, with a broad blue-green channel.
+    riverRibbon(z=>widthAt(z)+5,0,-.105,wetMat);
+    riverRibbon(z=>widthAt(z)+2.3,0,-.065,shallowMat);
+    riverRibbon(z=>widthAt(z),0,-.018,waterMat);
+    // Long subtle current highlights make the river read as moving water at a distance.
+    const glintMat=new THREE.MeshBasicMaterial({color:0x9bd4d2,transparent:true,opacity:.22,side:THREE.DoubleSide});
+    for(let strand=0;strand<3;strand++){
+      const pts=[];
+      for(let i=5;i<samples.length-5;i+=3){
+        const q=samples[i],z=q.z;
+        pts.push(new THREE.Vector3(q.x+(strand-1)*widthAt(z)*.34,.012,q.z));
+      }
+      const curve=new THREE.CatmullRomCurve3(pts);
+      const line=new THREE.Mesh(new THREE.TubeGeometry(curve,Math.max(30,pts.length*2),.035,5,false),glintMat);
+      scene.add(line);
+    }
+    // Papyrus beds and reeds are concentrated on the banks, not scattered in the channel.
+    for(let i=0;i<38;i++){
+      const z=132-i*12.7,cx=centerAt(z),w=widthAt(z);
+      for(const side of [-1,1]){
+        const count=(i%3===0?3:2);
+        for(let r=0;r<count;r++){
+          const along=(r-(count-1)/2)*2.4;
+          const x=cx+side*(w+3.2+Math.sin(i*1.7+r)*1.2)+along*.18;
+          const rz=z+along;
+          const stemH=1.1+(i%4)*.18;
+          cyl(.035,.06,stemH,M.reed,x,stemH/2-.02,rz,scene,5);
+          for(let leaf=0;leaf<3;leaf++){
+            const a=leaf*2.1+i*.37;
+            const frond=add(new THREE.ConeGeometry(.105,.85,5),M.green,x+Math.cos(a)*.2,stemH*.83,rz+Math.sin(a)*.2);
+            frond.rotation.z=.32*Math.cos(a);frond.rotation.x=.32*Math.sin(a);
+          }
+          if(r===0&&i%4===0){
+            const bloom=sphere(.13,M.green,x,stemH+.05,rz,scene,7);bloom.scale.set(1.5,.55,1.1);
+          }
         }
       }
     }
-    // Irrigated plots, date palms and small mud-brick farm compounds.
+    // Irrigated fields and date groves on the fertile western floodplain.
+    const fieldMat=mat(0x8b8752,.98),furrowMat=mat(0x665f39,.98);
     for(let i=0;i<12;i++){
-      const x=68+(i%3)*18,z=72-Math.floor(i/3)*53;
-      const plot=box(13,.06,25,mat(0x8b8752),x,-.08,z);
-      for(let row=0;row<3;row++)for(let col=0;col<3;col++){
-        const px=x-4+col*4,pz=z-8+row*8;
-        cyl(.12,.18,1.2,M.reed,px,.6,pz,scene,6);
-        sphere(.22,M.green,px,.95,pz,scene,8).scale.set(1.7,.6,1);
+      const x=49+(i%3)*15,z=91-Math.floor(i/3)*49;
+      const plot=box(12,.07,22,fieldMat,x,-.07,z);
+      for(let row=0;row<5;row++){
+        const furrow=box(10,.025,.09,furrowMat,x,-.025,z-8+row*4);
       }
+      for(let row=0;row<3;row++)for(let col=0;col<4;col++){
+        const px=x-4.2+col*2.8,pz=z-7+row*7;
+        const crop=cyl(.09,.13,.85,M.reed,px,.42,pz,scene,6);
+        crop.rotation.z=(col%2?.12:-.12);
+        sphere(.18,M.green,px,.88,pz,scene,8).scale.set(1.5,.55,1);
+      }
+      // Small irrigation ditch at the edge of each cultivated plot.
+      box(.32,.035,20,shallowMat,x+6.35,-.045,z);
     }
-    for(let i=0;i<26;i++){
-      const z=80-i*15;
-      const x=72+Math.sin(i*.55)*27;
-      palm(x,z);
+    // Palm trees follow the fertile riverbank in loose clusters.
+    for(let i=0;i<28;i++){
+      const z=119-i*16.2,cx=centerAt(z),side=i%4===0?1:-1;
+      const x=cx-side*(widthAt(z)+13+(i%3)*2);
+      palm(x,z+Math.sin(i*1.9)*3);
     }
-    // Reed boats and a simple timber landing along the bank.
-    for(let i=0;i<3;i++){
-      const x=100+(i-1)*12,z=44-i*72;
-      const dock=box(8,.45,3,M.darkStone,x,.18,z);
-      for(let k=0;k<4;k++)box(.12,.75,.12,M.leather,x-3+k*2,.55,z+1.2);
-      const hull=add(new THREE.ConeGeometry(2.1,9,5),M.darkStone,x,.45,z);hull.rotation.z=Math.PI/2;
-      box(3,.12,2,M.linen,x,.9,z);
-      for(const side of [-1,1])cyl(.06,.06,3,M.leather,x+side*1.5,2.1,z,scene,6);
+    // Three stone causeways connect the settlement to the eastern riverbank.
+    for(const z of [42,-112,-258]){
+      const cx=centerAt(z),w=widthAt(z);
+      const bridge=new THREE.Group();scene.add(bridge);bridge.position.set(cx,0,z);
+      box(w*2+17,.72,4.8,M.edgeStone,0,.42,0,bridge);
+      box(w*2+18,.22,5.3,M.limestone,0,.88,0,bridge);
+      for(const side of [-1,1]){
+        box(w*2+18,.42,.28,M.darkStone,0,1.05,side*2.45,bridge);
+        for(let k=-2;k<=2;k++)box(.48,.62,.42,M.sunBrick,k*8,1.22,side*2.35,bridge);
+      }
+      // Short ramps meet the muddy banks on either side.
+      for(const side of [-1,1]){
+        const ramp=box(8,.38,4.8,M.sandstone,side*(w+7),.18,0,bridge);
+        ramp.rotation.z=side*.045;
+      }
+      registerBoxCollider(cx,z,w*2+18,5.6,1.55);
+    }
+    // Reed boats, mooring posts and wooden landing stages along the western bank.
+    for(let i=0;i<4;i++){
+      const z=75-i*105,cx=centerAt(z),w=widthAt(z),x=cx-w-7.5;
+      const dock=new THREE.Group();scene.add(dock);dock.position.set(x,.0,z);
+      box(9,.42,4.2,M.darkStone,0,.25,0,dock);
+      box(8.6,.12,3.8,M.leather,0,.53,0,dock);
+      for(const px of [-3.7,3.7])for(const pz of [-1.5,1.5])cyl(.11,.14,1.2,M.leather,px,.8,pz,dock,7);
+      const hull=add(new THREE.CapsuleGeometry(.65,5.2,4,8),M.darkStone,0,.48,-5,dock);
+      hull.rotation.x=Math.PI/2;hull.rotation.z=Math.PI/2;hull.scale.set(.55,.55,1);
+      box(2.8,.1,1.8,M.linen,0,1.05,-5,dock);
+      registerBoxCollider(x,z,9,4.5,1.4);
     }
   }
 
@@ -495,7 +577,7 @@ function startGame(THREE){
   function createWorld(){
     scene=new THREE.Scene();
     scene.background=new THREE.Color(0x9fc6d4);
-    scene.fog=new THREE.Fog(0xd8bd8d,145,520);
+    scene.fog=new THREE.Fog(0xd8bd8d,175,560);
     scene.add(new THREE.HemisphereLight(0xffe9ce,0x725333,1.65));
     const sun=new THREE.DirectionalLight(0xffdfad,3.15);
     sun.position.set(-65,95,35); sun.castShadow=true;
@@ -770,8 +852,8 @@ function startGame(THREE){
     });
     renderer.domElement.addEventListener('pointermove',e=>{
       if(lookPointer){
-        yaw-=(e.clientX-lookPointer.x)*.006;
-        pitch=THREE.MathUtils.clamp(pitch+(e.clientY-lookPointer.y)*.002,-.08,.62);
+        yaw-=(e.clientX-lookPointer.x)*.0055;
+        pitch=THREE.MathUtils.clamp(pitch+(e.clientY-lookPointer.y)*.0022,-.12,.72);
         lookPointer={x:e.clientX,y:e.clientY};
       }
     });
@@ -796,19 +878,36 @@ function startGame(THREE){
     });
     const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
     const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
-    const direction=forward.multiplyScalar(-joy.y).add(right.multiplyScalar(joy.x));
-    const moving=direction.lengthSq()>.01;
-    if(moving){
-      direction.normalize();
-      const speed=running?9.8:5.1;
-      moveWithCollision(direction.x*speed*dt,direction.z*speed*dt);
-      player.rotation.y=Math.atan2(direction.x,direction.z);
-      const gait=t*(running?13:9);
-      player.userData.legs.forEach((l,i)=>l.rotation.x=Math.sin(gait+i*Math.PI)*.52);
-      player.userData.arms.forEach((a,i)=>a.rotation.x=Math.sin(gait+i*Math.PI+Math.PI)*.3);
+    const inputDirection=forward.multiplyScalar(-joy.y).add(right.multiplyScalar(joy.x));
+    const moving=inputDirection.lengthSq()>.01;
+    if(moving) inputDirection.normalize();
+    const maxSpeed=running?10.8:5.25;
+    const targetVelocity=inputDirection.multiplyScalar(maxSpeed);
+    moveVelocity.x=THREE.MathUtils.damp(moveVelocity.x,targetVelocity.x,moving?10:7,dt);
+    moveVelocity.z=THREE.MathUtils.damp(moveVelocity.z,targetVelocity.z,moving?10:7,dt);
+    const actualSpeed=Math.hypot(moveVelocity.x,moveVelocity.z);
+    if(actualSpeed>.12){
+      moveWithCollision(moveVelocity.x*dt,moveVelocity.z*dt);
+      const facing=Math.atan2(moveVelocity.x,moveVelocity.z);
+      let angle=THREE.MathUtils.euclideanModulo(facing-player.rotation.y+Math.PI,Math.PI*2)-Math.PI;
+      player.rotation.y+=angle*(1-Math.exp(-12*dt));
+      gaitPhase+=dt*(running?16.5:10.2)*(actualSpeed/maxSpeed);
+      const stride=(running?.72:.43)*Math.min(1,actualSpeed/maxSpeed);
+      player.userData.legs.forEach((l,i)=>l.rotation.x=Math.sin(gaitPhase+i*Math.PI)*stride);
+      player.userData.lowerLegs.forEach((l,i)=>l.rotation.x=Math.max(0,Math.cos(gaitPhase+i*Math.PI))*(running?1.02:.55));
+      player.userData.arms.forEach((a,i)=>a.rotation.x=Math.sin(gaitPhase+i*Math.PI+Math.PI)*(running?.62:.32));
+      player.userData.forearms.forEach((a,i)=>a.rotation.x=-.3-Math.max(0,Math.sin(gaitPhase+i*Math.PI))*.32);
+      if(grounded) player.position.y=Math.abs(Math.sin(gaitPhase*2))*(running?.075:.025);
+      cameraShake=THREE.MathUtils.damp(cameraShake,running?.035:.012,5,dt);
     }else{
-      player.userData.legs.forEach(l=>l.rotation.x=THREE.MathUtils.damp(l.rotation.x,0,8,dt));
-      player.userData.arms.forEach(a=>a.rotation.x=THREE.MathUtils.damp(a.rotation.x,0,8,dt));
+      moveVelocity.x=THREE.MathUtils.damp(moveVelocity.x,0,9,dt);
+      moveVelocity.z=THREE.MathUtils.damp(moveVelocity.z,0,9,dt);
+      player.userData.legs.forEach(l=>l.rotation.x=THREE.MathUtils.damp(l.rotation.x,0,10,dt));
+      player.userData.lowerLegs.forEach(l=>l.rotation.x=THREE.MathUtils.damp(l.rotation.x,0,10,dt));
+      player.userData.arms.forEach(a=>a.rotation.x=THREE.MathUtils.damp(a.rotation.x,0,10,dt));
+      player.userData.forearms.forEach(a=>a.rotation.x=THREE.MathUtils.damp(a.rotation.x,-.18,10,dt));
+      player.position.y=grounded?THREE.MathUtils.damp(player.position.y,Math.sin(t*2.1)*.018,5,dt):player.position.y;
+      cameraShake=THREE.MathUtils.damp(cameraShake,0,6,dt);
     }
     if(!grounded){
       player.position.y+=jumpVelocity*dt;
@@ -833,8 +932,26 @@ function startGame(THREE){
     const cameraTarget=scouting
       ? new THREE.Vector3(player.position.x,player.position.y+34,player.position.z+15)
       : desired;
-    camera.position.lerp(cameraTarget,1-Math.pow(.001,dt));
-    camera.lookAt(player.position.x,scouting?0:1.4+player.position.y,player.position.z);
+    // Third-person follow camera: shorten the boom before it clips through nearby architecture.
+    const lookAt=new THREE.Vector3(player.position.x,scouting?0:1.45+player.position.y,player.position.z);
+    if(!scouting){
+      const rayDir=cameraTarget.clone().sub(lookAt);
+      const rayLen=rayDir.length(); rayDir.normalize();
+      let allowed=rayLen;
+      for(const b of structureColliders){
+        const hit=new THREE.Ray(b.min.clone(),new THREE.Vector3(0,1,0));
+        // Approximate a camera boom obstruction with the closest point on each building box.
+        const samples=8;
+        for(let k=1;k<=samples;k++){
+          const q=lookAt.clone().addScaledVector(rayDir,rayLen*k/samples);
+          if(q.x>b.min.x-.35&&q.x<b.max.x+.35&&q.y>b.min.y&&q.y<b.max.y+.5&&q.z>b.min.z-.35&&q.z<b.max.z+.35){allowed=Math.min(allowed,rayLen*k/samples-.45);break;}
+        }
+      }
+      cameraTarget.copy(lookAt).addScaledVector(rayDir,Math.max(2.6,allowed));
+    }
+    cameraTarget.y+=Math.sin(t*13)*cameraShake;
+    camera.position.lerp(cameraTarget,1-Math.pow(.0008,dt));
+    camera.lookAt(lookAt);
     renderer.render(scene,camera);
   }
   try{
@@ -842,9 +959,11 @@ function startGame(THREE){
     root.appendChild(renderer.domElement);
     renderer.outputColorSpace=THREE.SRGBColorSpace;
     renderer.toneMapping=THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure=1.12;
+    renderer.toneMappingExposure=1.18;
+    renderer.physicallyCorrectLights=true;
     renderer.shadowMap.enabled=true;
     renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+    renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));
     camera=new THREE.PerspectiveCamera(60,1,.1,750);
     clock=new THREE.Clock();
     createWorld();
