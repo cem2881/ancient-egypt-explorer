@@ -4,452 +4,427 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Kayıp Firavun v27</title>
+<title>MEDJAY - Mısır'ın Kayıp Sırrı</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;overflow:hidden;background:#d5ad78;font-family:Arial;touch-action:none}
+body{margin:0;overflow:hidden;background:#c99b62;font-family:Arial;touch-action:none}
 canvas{display:block}
-#hud{position:fixed;top:12px;left:12px;z-index:5;background:#24180ddd;color:white;padding:12px;border-radius:12px;font-size:12px;max-width:220px;pointer-events:none}
-#title{font-size:17px;font-weight:bold;margin-bottom:6px}
-#joy{position:fixed;left:20px;bottom:24px;width:116px;height:116px;border:2px solid #ffffff88;background:#ffffff30;border-radius:50%;z-index:10;touch-action:none}
-#stick{position:absolute;left:32px;top:32px;width:48px;height:48px;border-radius:50%;background:#ffffffbb;border:2px solid white}
-#lookArea{position:fixed;left:145px;right:0;top:0;bottom:0;z-index:2;touch-action:none}
-#actions{position:fixed;right:15px;bottom:25px;z-index:12;display:flex;flex-direction:column;gap:9px;align-items:flex-end}
-.action{border:1px solid #ffffff99;background:#392719dd;color:white;border-radius:30px;padding:13px 17px;font-weight:bold;font-size:13px;min-width:105px;touch-action:manipulation}
-#message{position:fixed;z-index:15;left:50%;top:23%;transform:translateX(-50%);background:#21170de8;color:white;border-radius:12px;padding:14px 18px;max-width:85%;text-align:center;font-size:14px;display:none}
-#inventory{position:fixed;right:12px;top:12px;z-index:5;background:#24180ddd;color:white;border-radius:10px;padding:9px;font-size:12px;pointer-events:none}
-#error{display:none;position:fixed;z-index:30;inset:10px;background:#300;color:white;padding:20px;white-space:pre-wrap;overflow:auto}
+#hud{position:fixed;top:12px;left:12px;z-index:5;color:white;background:#17130edb;padding:12px;border-radius:12px;font-size:12px;pointer-events:none;min-width:175px}
+#title{font-size:17px;font-weight:bold;color:#e7c17d;margin-bottom:7px}
+#healthbar{height:7px;background:#53352c;border-radius:5px;margin-top:6px;overflow:hidden}
+#healthfill{height:100%;width:100%;background:#c44c36}
+#quest{margin-top:7px;color:#e9cf9d}
+#inventory{position:fixed;right:12px;top:12px;background:#17130edb;color:white;padding:10px;border-radius:10px;z-index:5;font-size:12px}
+#joy{position:fixed;left:22px;bottom:25px;width:125px;height:125px;border:2px solid #ffffff77;background:#ffffff22;border-radius:50%;z-index:10;touch-action:none}
+#stick{position:absolute;width:48px;height:48px;left:36px;top:36px;border-radius:50%;background:#ffffffbb;border:2px solid white;pointer-events:none}
+#look{position:fixed;left:150px;right:0;top:0;bottom:0;z-index:2;touch-action:none}
+#buttons{position:fixed;right:16px;bottom:24px;z-index:12;display:flex;flex-direction:column;gap:10px;align-items:flex-end}
+button{border:1px solid #e6c58c88;background:#302116e8;color:#fff;border-radius:28px;padding:14px 17px;min-width:108px;font-weight:bold;font-size:13px;touch-action:manipulation}
+button:active{background:#a8783d;transform:scale(.94)}
+#message{position:fixed;top:24%;left:50%;transform:translateX(-50%);z-index:15;background:#17130eea;color:#f4dfb5;padding:14px 18px;border-radius:12px;text-align:center;max-width:85%;font-size:14px;display:none;pointer-events:none}
+#error{display:none;position:fixed;inset:10px;background:#300;color:white;padding:15px;z-index:30;white-space:pre-wrap;overflow:auto}
+#hint{position:fixed;bottom:160px;left:15px;color:white;background:#17130eaa;padding:7px 10px;border-radius:8px;font-size:11px;z-index:5;pointer-events:none}
 </style>
 </head>
 <body>
 <div id="hud">
- <div id="title">KAYIP FİRAVUN</div>
- <div>MEDJAY • ANTİK MISIR</div>
- <div id="status">Çölü keşfet</div>
- <div id="quest">Görev: Henüz yok</div>
- <div id="health">Can: 100</div>
+ <div id="title">MEDJAY</div>
+ <div>ANTİK MISIR • MACERA</div>
+ <div id="health">CAN: 100</div>
+ <div id="healthbar"><div id="healthfill"></div></div>
+ <div id="quest">Görev: Hassan'ı bul</div>
+ <div id="area">Giza Çölü</div>
 </div>
-<div id="inventory">Envanter: 0 eser</div>
-<div id="lookArea"></div>
+<div id="inventory">Eser: 0</div>
+<div id="look"></div>
 <div id="joy"><div id="stick"></div></div>
-<div id="actions">
- <button class="action" id="interact">ETKİLEŞİM</button>
- <button class="action" id="attack">KILIÇ</button>
- <button class="action" id="bag">ENVANTER</button>
+<div id="hint">Sol joystick: hareket • Sağ taraf: kamera</div>
+<div id="buttons">
+ <button id="interact">ETKİLEŞİM</button>
+ <button id="attack">KILIÇ</button>
+ <button id="roll">KAÇIN</button>
 </div>
 <div id="message"></div>
 <div id="error"></div>
 
 <script>
-function showError(m){
- const e=document.getElementById("error");
- e.style.display="block";e.textContent="Oyun hatası:\n"+m;
+function showError(e){
+ const el=document.getElementById("error");
+ el.style.display="block";
+ el.textContent="Oyun hatası:\n"+e;
 }
 window.addEventListener("error",e=>showError(e.message));
 window.addEventListener("unhandledrejection",e=>showError(String(e.reason)));
 </script>
 
 <script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
-// SAHNE VE GRAFİK
+try{
 const scene=new THREE.Scene();
-scene.background=new THREE.Color(0xe4bd88);
-scene.fog=new THREE.Fog(0xe4bd88,48,115);
+scene.background=new THREE.Color(0xd6ad79);
+scene.fog=new THREE.Fog(0xd6ad79,65,190);
 
-const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,180);
-camera.position.set(0,5,8);
-
-const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:"low-power"});
-renderer.setPixelRatio(Math.min(devicePixelRatio,1));
+const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,250);
+const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:"high-performance"});
 renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.25));
 renderer.outputColorSpace=THREE.SRGBColorSpace;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure=1.15;
-renderer.shadowMap.enabled=false;
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
-scene.add(new THREE.HemisphereLight(0xffe7c5,0x765438,2));
-const sun=new THREE.DirectionalLight(0xffd59a,1.8);
-sun.position.set(-25,35,15);
+scene.add(new THREE.HemisphereLight(0xffe8c9,0x61432b,2.0));
+const sun=new THREE.DirectionalLight(0xffd49a,2.3);
+sun.position.set(-45,65,30);
+sun.castShadow=true;
+sun.shadow.mapSize.set(1024,1024);
+sun.shadow.camera.left=-100;
+sun.shadow.camera.right=100;
+sun.shadow.camera.top=100;
+sun.shadow.camera.bottom=-100;
+sun.shadow.camera.near=1;
+sun.shadow.camera.far=180;
+sun.shadow.bias=-0.0004;
 scene.add(sun);
 
-const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:1});
-const sand=mat(0xd0a66f),stone=mat(0xc2a078),darkStone=mat(0x806044);
-const pale=mat(0xe5c18e),green=mat(0x466b39),water=mat(0x397b91);
-const leather=mat(0x593923),brown=mat(0x805333),cloth=mat(0xc5aa7d);
-const dark=mat(0x30231b),bronze=mat(0x9d7137),metal=mat(0x9a9a8a);
-const skin=mat(0x956747),hood=mat(0x49382c),gold=mat(0xc69a42);
-const red=mat(0x994b32),blue=mat(0x496b83);
+const mat=(color,rough=1)=>new THREE.MeshStandardMaterial({color,roughness:rough});
+const sand=mat(0xc9a06a),sandLight=mat(0xe0bd88);
+const stone=mat(0xb99a70),stoneDark=mat(0x78604a);
+const gold=mat(0xd3a64f,.65),blue=mat(0x397e91,.35);
+const green=mat(0x42683a),brown=mat(0x60402b);
+const cloth=mat(0xc8b18c),skin=mat(0x956747);
+const black=mat(0x29221d),red=mat(0x8f392d),metal=mat(0xaaa99d,.4);
 
-function box(parent,x,y,z,sx,sy,sz,m){
- const o=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),m);
- o.position.set(x,y,z);parent.add(o);return o;
+function addMesh(parent,geo,material,x,y,z,cast=true){
+ const m=new THREE.Mesh(geo,material);
+ m.position.set(x,y,z);
+ m.castShadow=cast;
+ m.receiveShadow=true;
+ parent.add(m);
+ return m;
 }
-function sphere(parent,x,y,z,sx,sy,sz,m){
- const o=new THREE.Mesh(new THREE.SphereGeometry(1,8,7),m);
- o.position.set(x,y,z);o.scale.set(sx,sy,sz);parent.add(o);return o;
+function cube(parent,x,y,z,w,h,d,material){
+ return addMesh(parent,new THREE.BoxGeometry(w,h,d),material,x,y,z);
 }
-function cylinder(parent,x,y,z,rt,rb,h,m,n=8){
- const o=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,n),m);
- o.position.set(x,y,z);parent.add(o);return o;
+function ball(parent,x,y,z,sx,sy,sz,material){
+ const m=addMesh(parent,new THREE.SphereGeometry(1,12,10),material,x,y,z);
+ m.scale.set(sx,sy,sz);
+ return m;
 }
-function group(parent=scene,x=0,y=0,z=0){
- const g=new THREE.Group();g.position.set(x,y,z);parent.add(g);return g;
+function cyl(parent,x,y,z,top,bottom,h,material,segments=12){
+ return addMesh(parent,new THREE.CylinderGeometry(top,bottom,h,segments),material,x,y,z);
+}
+function group(parent,x=0,y=0,z=0){
+ const g=new THREE.Group();
+ g.position.set(x,y,z);
+ parent.add(g);
+ return g;
 }
 
-// ZEMİN
-const ground=new THREE.Mesh(new THREE.PlaneGeometry(220,220),sand);
-ground.rotation.x=-Math.PI/2;ground.position.y=-.15;scene.add(ground);
+// ÇÖL
+const floor=addMesh(scene,new THREE.PlaneGeometry(400,400),sand,0,-.2,0,false);
+floor.rotation.x=-Math.PI/2;
 
-// KUM TEPELERİ
-for(let i=0;i<18;i++){
- const o=sphere(scene,(Math.random()-.5)*150,-.35,(Math.random()-.5)*150,
- 8+Math.random()*7,1,4+Math.random()*4,i%2?pale:stone);
+// Kum tepeleri
+for(let i=0;i<45;i++){
+ const x=(Math.random()-.5)*300;
+ const z=(Math.random()-.5)*300;
+ const mound=ball(scene,x,-.55,z,7+Math.random()*9,1.3,5+Math.random()*7,i%3?sand:sandLight);
+ mound.rotation.y=Math.random()*3;
 }
 
-// PİRAMİTLER
+// Taşlar
+for(let i=0;i<65;i++){
+ const x=(Math.random()-.5)*220;
+ const z=(Math.random()-.5)*220;
+ const r=.25+Math.random()*.8;
+ const rock=ball(scene,x,r*.3,z,r,r*.55,r*.8,i%2?stone:stoneDark);
+ rock.rotation.set(Math.random(),Math.random(),Math.random());
+}
+
+// Piramitler
 function pyramid(x,z,size){
- const p=new THREE.Mesh(new THREE.ConeGeometry(size,size*.88,4),stone);
- p.position.set(x,size*.44,z);p.rotation.y=Math.PI/4;scene.add(p);
- box(scene,x,.08,z,size*1.45,.25,size*1.45,darkStone);
+ const g=group(scene,x,0,z);
+ const geo=new THREE.ConeGeometry(size,size*1.45,4);
+ const p=addMesh(g,geo,stone,0,size*.725,0);
+ p.rotation.y=Math.PI/4;
+ cube(g,0,.15,0,size*1.5,.3,size*1.5,stoneDark);
 }
-pyramid(-16,-28,17);
-pyramid(-38,-45,10);
-pyramid(25,-48,12);
+pyramid(-25,-55,23);
+pyramid(-65,-80,14);
+pyramid(35,-85,17);
+pyramid(100,-120,11);
 
-// TAPINAK
-const temple=group();
-box(temple,18,.5,-17,17,1,12,darkStone);
-box(temple,18,3,-17,15,5,10,stone);
-box(temple,18,5.7,-17,17,1,12,pale);
-for(let x=12;x<=24;x+=3){
- cylinder(temple,x,3,-11,.8,.8,4.5,pale);
+// Küçük mezar yapıları
+function ruin(x,z){
+ const g=group(scene,x,0,z);
+ cube(g,0,.4,0,12,.8,10,stoneDark);
+ for(let i=0;i<5;i++){
+  cyl(g,-4+i*2,2,0,.65,.75,3.2,stone,8);
+ }
+ cube(g,0,3.8,0,12,.5,10,stone);
+}
+ruin(-80,45);
+ruin(85,-35);
+
+// Nil Nehri
+const river=addMesh(scene,new THREE.PlaneGeometry(28,250),blue,-115,.02,-10,false);
+river.rotation.x=-Math.PI/2;
+river.rotation.z=-.12;
+
+// Su kıyısı
+for(let i=0;i<15;i++){
+ const x=-100+Math.random()*12;
+ const z=-120+Math.random()*230;
+ ball(scene,x,0,z,1.5,.25,1,stoneDark);
 }
 
-// NEHİR
-const river=new THREE.Mesh(new THREE.PlaneGeometry(15,110),water);
-river.rotation.x=-Math.PI/2;river.rotation.z=-.18;
-river.position.set(-50,.01,-10);scene.add(river);
-
-// PALMİYE
+// Palmiye
 function palm(x,z){
  const g=group(scene,x,0,z);
- cylinder(g,0,2.5,0,.2,.38,5,darkStone,7);
- for(let i=0;i<7;i++){
-  const a=i*Math.PI*2/7;
-  const leaf=cylinder(g,Math.cos(a)*1.3,5,Math.sin(a)*1.3,.05,.5,4,green,5);
-  leaf.rotation.z=-Math.cos(a)*.8;
-  leaf.rotation.x=Math.sin(a)*.8;
+ cyl(g,0,2.5,0,.25,.42,5,brown,9);
+ for(let i=0;i<8;i++){
+  const a=i*Math.PI/4;
+  const leaf=cyl(g,Math.cos(a)*1.5,5.1,Math.sin(a)*1.5,.08,.42,4.2,green,6);
+  leaf.rotation.z=-Math.cos(a)*.7;
+  leaf.rotation.x=Math.sin(a)*.7;
  }
 }
-[[-40,8],[-44,16],[-36,22],[-55,-25],[-5,12],[35,8],[39,13],[31,15],[5,-35],[65,38],[70,50],[57,52]].forEach(p=>palm(...p));
+for(let i=0;i<32;i++){
+ palm((Math.random()-.5)*170,(Math.random()-.5)*170);
+}
 
-// KÖY
+// Vaha
+const oasis=addMesh(scene,new THREE.CircleGeometry(13,32),blue,80,.03,65,false);
+oasis.rotation.x=-Math.PI/2;
+for(let i=0;i<12;i++){
+ const a=i*Math.PI/6;
+ palm(80+Math.cos(a)*17,65+Math.sin(a)*17);
+}
+
+// Köy
 function house(x,z){
  const g=group(scene,x,0,z);
- box(g,0,1.5,0,5,3,4,stone);
- box(g,0,3.1,0,5.4,.35,4.4,darkStone);
- box(g,0,.9,-2.05,.9,1.8,.12,dark);
- box(g,1.4,2,-2.06,.65,.65,.13,darkStone);
+ cube(g,0,1.7,0,7,3.4,6,stone);
+ cube(g,0,3.5,0,7.5,.4,6.5,stoneDark);
+ cube(g,0,1,-3.06,1.3,2,.1,black);
+ cube(g,2,2,-3.07,.8,.7,.1,black);
+ cube(g,-2,2,-3.07,.8,.7,.1,black);
 }
-house(27,-8);house(43,-10);house(28,8);house(48,7);house(37,23);house(55,-1);
+[[25,15],[40,15],[55,15],[25,32],[43,34],[60,35],[75,20],[75,40]].forEach(p=>house(...p));
 
-// PAZAR
-function stall(x,z){
+// Pazar tezgahları
+function market(x,z,color){
  const g=group(scene,x,0,z);
- box(g,0,.7,0,3,1.1,1.8,darkStone);
- box(g,0,1.45,0,3.5,.18,2.2,red);
- for(const a of [-1.4,1.4])for(const b of [-.8,.8])
-  cylinder(g,a,1,b,.05,.05,2,dark);
- for(let i=0;i<3;i++)sphere(g,-.8+i*.8,1.35,-.3,.22,.22,.22,i===1?gold:green);
+ cube(g,0,.9,0,4,1.3,2.5,stoneDark);
+ cube(g,0,1.8,0,4.6,.2,3,color);
+ for(const a of [-1.9,1.9]){
+  for(const b of [-1.1,1.1]){
+   cyl(g,a,1,b,.06,.06,2.3,brown,6);
+  }
+ }
+ for(let i=0;i<4;i++)ball(g,-1.3+i*.8,1.55,-.4,.25,.25,.25,i%2?gold:green);
 }
-stall(32,-18);stall(41,-19);stall(36,-23);
+market(25,-5,red);
+market(40,-7,blue);
+market(55,-5,red);
 
-// VAHA
-const pond=new THREE.Mesh(new THREE.CircleGeometry(8,20),water);
-pond.rotation.x=-Math.PI/2;pond.position.set(65,.03,48);scene.add(pond);
-for(let i=0;i<8;i++)palm(65+Math.cos(i*Math.PI/4)*11,48+Math.sin(i*Math.PI/4)*11);
-
-// HARABELER
-function ruins(x,z){
- const g=group(scene,x,0,z);
- box(g,0,.25,0,12,.5,9,darkStone);
- for(let i=0;i<4;i++)cylinder(g,(i%2)*8-4,2.5,Math.floor(i/2)*5-2.5,.7,.7,4.5,stone);
- box(g,0,4.8,-2.5,11,.7,1.2,pale);
-}
-ruins(-35,35);ruins(75,-40);
-
-// OYUNCU
-const player=group(scene);
-const body=group(player);
+// Oyuncu modeli
+const player=group(scene,0,0,12);
+const avatar=group(player);
 const legs=[],arms=[];
-
+cyl(avatar,-.22,.65,0,.18,.2,1, brown);
+cyl(avatar,.22,.65,0,.18,.2,1,brown);
+cube(avatar,-.22,.12,-.06,.38,.22,.5,black);
+cube(avatar,.22,.12,-.06,.38,.22,.5,black);
+cyl(avatar,0,1.55,0,.4,.48,1.1,cloth);
+cube(avatar,0,1.65,-.28,.8,.8,.15,brown);
+const sash=cube(avatar,-.13,1.65,-.4,.13,1,.12,gold);
+sash.rotation.z=-.4;
+ball(avatar,0,2.45,0,.31,.34,.3,skin);
+ball(avatar,0,2.68,.04,.38,.3,.38,black);
+cube(avatar,0,2.35,-.28,.6,.12,.16,brown);
 for(const s of [-1,1]){
- cylinder(body,s*.2,.55,0,.16,.19,.9,brown);
- box(body,s*.2,.12,-.08,.34,.2,.48,dark);
- legs.push(body.children[body.children.length-2]);
+ const arm=cyl(avatar,s*.53,1.55,0,.14,.17,.85,skin);
+ arm.rotation.z=s*.2;
+ arms.push(arm);
+ legs.push(avatar.children[s===-1?0:1]);
 }
-cylinder(body,0,1.55,0,.39,.52,1.2,cloth);
-box(body,0,1.75,-.27,.78,.85,.18,leather);
-const strap=box(body,-.12,1.78,-.39,.13,1.05,.12,brown);
-strap.rotation.z=-.42;
-sphere(body,-.48,2.02,0,.25,.19,.25,brown);
-sphere(body,.48,2.02,0,.25,.19,.25,brown);
-box(body,0,1.12,0,.85,.16,.55,dark);
-cylinder(body,0,2.28,0,.14,.15,.25,skin);
-sphere(body,0,2.57,0,.31,.31,.31,skin);
-sphere(body,0,2.75,.04,.39,.41,.41,hood);
-box(body,0,2.79,-.25,.66,.13,.23,brown);
+const sword=cube(avatar,.72,.9,-.1,.1,.95,.1,metal);
+sword.rotation.z=-.3;
+player.scale.setScalar(.85);
 
-for(const s of [-1,1]){
- const a=cylinder(body,s*.52,1.65,0,.13,.17,.82,skin);
- a.rotation.z=s*.17;arms.push(a);
- box(body,s*.58,1.48,-.04,.25,.36,.28,brown);
- cylinder(body,s*.58,1.27,0,.17,.17,.16,bronze);
-}
-const bow=group(body,.42,1.75,.28);
-const curve=new THREE.Mesh(new THREE.TorusGeometry(.48,.035,5,12,Math.PI),brown);
-curve.rotation.z=Math.PI/2;bow.add(curve);
-box(body,.2,1.9,.38,.3,.8,.25,dark);
-const sword=box(body,.55,.75,-.05,.09,.65,.07,metal);
-sword.rotation.z=-.35;
-
-// NPC OLUŞTURUCU
+// NPC
 const npcs=[];
-function makeNPC(x,z,name,role,color,quest=false){
+function npc(x,z,name,kind){
  const g=group(scene,x,0,z);
- cylinder(g,0,.55,0,.17,.19,.9,color);
- cylinder(g,0,1.35,0,.37,.43,.8,role==="Tüccar"?blue:cloth);
- sphere(g,0,2.05,0,.29,.3,.29,skin);
- sphere(g,0,2.22,.03,.33,.2,.34,role==="Muhafız"?dark:cloth);
- const npc={g,name,role,quest,home:new THREE.Vector3(x,0,z),phase:Math.random()*6};
- npcs.push(npc);
- return npc;
+ cyl(g,0,.55,0,.18,.2,1,kind==="guard"?red:cloth);
+ cyl(g,0,1.35,0,.36,.4,.8,kind==="merchant"?blue:cloth);
+ ball(g,0,2.02,0,.28,.3,.28,skin);
+ ball(g,0,2.22,.03,.33,.18,.34,kind==="guard"?black:cloth);
+ npcs.push({g,name,kind,home:new THREE.Vector3(x,0,z),phase:Math.random()*6});
 }
-makeNPC(32,-12,"Hassan","Köylü",cloth,true);
-makeNPC(43,-17,"Nefru","Tüccar",blue);
-makeNPC(26,12,"Amun","Köylü",red);
-makeNPC(51,4,"Rahotep","Muhafız",dark);
-makeNPC(61,35,"Kheti","Muhafız",dark);
+npc(31,8,"Hassan","quest");
+npc(48,7,"Nefru","merchant");
+npc(67,24,"Rahotep","guard");
+npc(15,24,"Amun","villager");
+npc(80,53,"Kheti","guard");
 
-// MEZAR ODASI
-const tomb=group(scene,0,-100,0);
-const tombFloor=meshTomb();
-function meshTomb(){
- const floor=new THREE.Mesh(new THREE.PlaneGeometry(32,32),darkStone);
- floor.rotation.x=-Math.PI/2;floor.position.set(0,-100,0);scene.add(floor);
- return floor;
-}
-const walls=group(scene,0,-100,0);
-box(walls,0,2,-15,32,4,1,darkStone);
-box(walls,0,2,15,32,4,1,darkStone);
-box(walls,-15,2,0,1,4,30,darkStone);
-box(walls,15,2,0,1,4,30,darkStone);
-box(walls,0,4,0,30,1,30,darkStone);
-box(walls,0,.4,0,5,.8,5,bronze);
-const treasure=group(scene,0,-100,0);
-box(treasure,0,.7,-7,2,1.4,1.5,gold);
-for(let i=0;i<5;i++)sphere(treasure,-2+i,1,-9,.25,.25,.25,gold);
-
-// DÜŞMANLAR
+// Düşmanlar
 const enemies=[];
-function makeEnemy(x,z){
+function enemy(x,z){
  const g=group(scene,x,0,z);
- cylinder(g,0,.6,0,.18,.2,1.1,dark);
- cylinder(g,0,1.45,0,.38,.4,.7,red);
- sphere(g,0,2.12,0,.28,.28,.28,skin);
- const enemy={g,hp:3,alive:true,attackTime:0};
- enemies.push(enemy);
- return enemy;
+ cyl(g,0,.6,0,.19,.22,1.1,black);
+ cyl(g,0,1.5,0,.4,.42,.8,red);
+ ball(g,0,2.12,0,.28,.28,.28,skin);
+ enemies.push({g,hp:3,alive:true});
 }
-makeEnemy(-28,20);
-makeEnemy(-40,30);
-makeEnemy(60,20);
+enemy(-40,15);
+enemy(-50,35);
+enemy(100,25);
+enemy(-80,-10);
 
-// OYUN DURUMU
-let questStarted=false,questDone=false,relics=0;
-let insideTomb=false,health=100,inventory=0;
-let angle=0,joyX=0,joyY=0,looking=false,lastX=0,steps=0;
-let messageTimer=0;
-
-function say(text){
- const box=document.getElementById("message");
- box.textContent=text;box.style.display="block";
+// Oyun durumu
+let angle=0,joyX=0,joyY=0,looking=false,lastX=0;
+let health=100,artifacts=0,questStarted=false,questDone=false;
+let messageTimer=0,attackTimer=0,rollTimer=0,damageTimer=0;
+let step=0;
+const message=document.getElementById("message");
+function say(t){
+ message.textContent=t;
+ message.style.display="block";
  messageTimer=3.5;
 }
-function distance(a,b){
- return Math.hypot(a.x-b.x,a.z-b.z);
-}
-function updateHUD(){
- document.getElementById("health").textContent="Can: "+health;
- document.getElementById("inventory").textContent="Envanter: "+inventory+" eser";
+function dist(a,b){return Math.hypot(a.x-b.x,a.z-b.z)}
+function updateUI(){
+ document.getElementById("health").textContent="CAN: "+health;
+ document.getElementById("healthfill").style.width=health+"%";
+ document.getElementById("inventory").textContent="Eser: "+artifacts;
  document.getElementById("quest").textContent=
- !questStarted?"Görev: Henüz yok":questDone?"Görev: Tamamlandı":"Görev: Kayıp eserleri bul ("+relics+"/3)";
+ !questStarted?"Görev: Hassan'ı bul":
+ questDone?"Görev: Tamamlandı":"Görev: 3 antik eser bul ("+artifacts+"/3)";
 }
-
-// ETKİLEŞİM
 function interact(){
- if(insideTomb){
-  if(distance(player.position,new THREE.Vector3(0,0,13))<4){
-   leaveTomb();return;
-  }
-  if(distance(player.position,new THREE.Vector3(0,0,-7))<4){
-   inventory+=5;
-   say("Firavunun hazinesini buldun! +5 eser");
-   treasure.visible=false;
-   updateHUD();return;
-  }
-  say("Mezar odasını araştır.");
-  return;
- }
-
- let nearest=null,nd=5;
+ let closest=null,dmin=8;
  for(const n of npcs){
-  const d=distance(player.position,n.g.position);
-  if(d<nd){nd=d;nearest=n;}
+  const d=dist(player.position,n.g.position);
+  if(d<dmin){dmin=d;closest=n;}
  }
- if(nearest){
-  if(nearest.quest){
+ if(closest){
+  if(closest.kind==="quest"){
    if(!questStarted){
     questStarted=true;
-    say("Hassan: Üç kayıp antik eseri bul. Mezarların çevresini araştır!");
-   }else if(relics>=3&&!questDone){
-    questDone=true;inventory+=10;
-    say("Hassan: Eserleri buldun! Ödülün 10 altın.");
-   }else if(questDone)say("Hassan: Mısır seni unutmayacak, Medjay.");
-   else say("Hassan: Üç eseri bulmalısın. Şans seninle olsun.");
-  }else if(nearest.role==="Tüccar"){
-   say("Nefru: Çölde değerli eşyalar saklı. Gözünü açık tut.");
-  }else if(nearest.role==="Muhafız"){
-   say("Muhafız: Bu bölgeyi koruyoruz. Dikkatli ol.");
-  }else say(nearest.name+": Selam Medjay!");
+    say("Hassan: Üç antik eseri bul. Mısır'ın sırrını ortaya çıkar!");
+   }else if(artifacts>=3&&!questDone){
+    questDone=true;
+    say("Hassan: Görev tamamlandı! Mısır sana minnettar.");
+   }else{
+    say("Hassan: Eserler piramitlerin ve harabelerin çevresinde.");
+   }
+  }else if(closest.kind==="merchant"){
+   say("Nefru: Çölde eski mezarlar ve hazineler var.");
+  }else if(closest.kind==="guard"){
+   say("Muhafız: Bu bölgeyi koruyoruz, Medjay.");
+  }else{
+   say(closest.name+": Selam Medjay!");
+  }
   return;
  }
-
- // Mezar girişi
- if(distance(player.position,new THREE.Vector3(-16,0,-28))<9){
-  enterTomb();return;
- }
-
- // Eser toplama
- if(questStarted&&!questDone&&relics<3){
-  const spots=[[-35,35],[75,-40],[-38,-45]];
-  for(const p of spots){
-   if(Math.hypot(player.position.x-p[0],player.position.z-p[1])<5){
-    relics++;inventory++;
-    say("Antik eser buldun! "+relics+"/3");
-    updateHUD();return;
+ if(questStarted&&!questDone){
+  const sites=[[-80,45],[85,-35],[-65,-80]];
+  for(const p of sites){
+   if(Math.hypot(player.position.x-p[0],player.position.z-p[1])<9){
+    artifacts++;
+    say("Antik eser bulundu! "+artifacts+"/3");
+    updateUI();
+    return;
    }
   }
  }
- say("Yakında etkileşime geçilecek bir şey yok.");
+ say("Etkileşim için bir NPC'ye veya antik esere yaklaş.");
 }
-
-// MEZARA GİRİŞ / ÇIKIŞ
-function enterTomb(){
- insideTomb=true;
- player.position.set(0,0,7);
- scene.fog.near=25;scene.fog.far=55;
- scene.background.set(0x17130e);
- scene.fog.color.set(0x17130e);
- scene.add(tomb);
- say("Firavunun mezarına girdin. Hazineyi bul!");
-}
-function leaveTomb(){
- insideTomb=false;
- player.position.set(-16,0,-18);
- scene.fog.near=48;scene.fog.far=115;
- scene.background.set(0xe4bd88);
- scene.fog.color.set(0xe4bd88);
- say("Tekrar çöle çıktın.");
-}
-
-// KILIÇ SAVAŞI
 function attack(){
- if(insideTomb){
-  say("Mezar sessiz. Hazineyi araştır.");
-  return;
- }
- let target=null,nearest=4;
+ attackTimer=.4;
+ let target=null,dmin=6;
  for(const e of enemies){
   if(!e.alive)continue;
-  const d=distance(player.position,e.g.position);
-  if(d<nearest){nearest=d;target=e;}
+  const d=dist(player.position,e.g.position);
+  if(d<dmin){dmin=d;target=e;}
  }
  if(!target){
-  say("Yakında saldırılacak düşman yok.");
+  say("Kılıç savurdun. Yakında düşman yok.");
   return;
  }
  target.hp--;
- target.g.rotation.y+=.5;
  if(target.hp<=0){
   target.alive=false;
   target.g.visible=false;
-  inventory++;
-  say("Muhafızı yendin! Bir eşya kazandın.");
-  updateHUD();
- }else{
-  say("Kılıç darbesi! Düşmanın canı: "+target.hp);
- }
+  artifacts++;
+  say("Düşmanı yendin! Eşya kazandın.");
+  updateUI();
+ }else say("Vuruş! Düşman canı: "+target.hp);
+}
+function dodge(){
+ if(rollTimer>0)return;
+ rollTimer=.55;
+ say("Kaçınma!");
 }
 
-// ENVANTER
-function showBag(){
- say("Envanterinde "+inventory+" antik eser var.");
-}
-
-// BUTONLAR
+// Kontroller
 document.getElementById("interact").addEventListener("click",interact);
 document.getElementById("attack").addEventListener("click",attack);
-document.getElementById("bag").addEventListener("click",showBag);
+document.getElementById("roll").addEventListener("click",dodge);
 
-// JOYSTICK
 const joy=document.getElementById("joy");
 const stick=document.getElementById("stick");
-const lookArea=document.getElementById("lookArea");
-function updateJoy(e){
+function joyMove(e){
  const r=joy.getBoundingClientRect();
- let x=e.clientX-(r.left+r.width/2);
- let y=e.clientY-(r.top+r.height/2);
- const max=38,d=Math.hypot(x,y);
+ let x=e.clientX-r.left-r.width/2;
+ let y=e.clientY-r.top-r.height/2;
+ const max=40,d=Math.hypot(x,y);
  if(d>max){x=x/d*max;y=y/d*max;}
- joyX=x/max;joyY=y/max;
+ joyX=x/max;
+ joyY=y/max;
  stick.style.transform=`translate(${x}px,${y}px)`;
 }
-function resetJoy(){
- joyX=0;joyY=0;stick.style.transform="translate(0,0)";
+function joyReset(){
+ joyX=0;joyY=0;
+ stick.style.transform="translate(0,0)";
 }
 joy.addEventListener("pointerdown",e=>{
- joy.setPointerCapture(e.pointerId);updateJoy(e);
+ joy.setPointerCapture(e.pointerId);
+ joyMove(e);
 });
 joy.addEventListener("pointermove",e=>{
- if(joy.hasPointerCapture(e.pointerId))updateJoy(e);
+ if(joy.hasPointerCapture(e.pointerId))joyMove(e);
 });
-joy.addEventListener("pointerup",resetJoy);
-joy.addEventListener("pointercancel",resetJoy);
+joy.addEventListener("pointerup",joyReset);
+joy.addEventListener("pointercancel",joyReset);
 
-lookArea.addEventListener("pointerdown",e=>{
- looking=true;lastX=e.clientX;
- lookArea.setPointerCapture(e.pointerId);
+const look=document.getElementById("look");
+look.addEventListener("pointerdown",e=>{
+ looking=true;
+ lastX=e.clientX;
+ look.setPointerCapture(e.pointerId);
 });
-lookArea.addEventListener("pointermove",e=>{
+look.addEventListener("pointermove",e=>{
  if(!looking)return;
  angle-=(e.clientX-lastX)*.006;
  lastX=e.clientX;
 });
-lookArea.addEventListener("pointerup",()=>looking=false);
-lookArea.addEventListener("pointercancel",()=>looking=false);
+look.addEventListener("pointerup",()=>looking=false);
+look.addEventListener("pointercancel",()=>looking=false);
 
 const keys={};
 addEventListener("keydown",e=>keys[e.key.toLowerCase()]=true);
 addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
 
-// OYUN DÖNGÜSÜ
+// Kamera ve oyun
 const clock=new THREE.Clock();
-const target=new THREE.Vector3();
-let damageCooldown=0;
-
+const cameraTarget=new THREE.Vector3();
 function animate(){
  requestAnimationFrame(animate);
  const dt=Math.min(clock.getDelta(),.04);
@@ -462,85 +437,97 @@ function animate(){
 
  const moving=Math.hypot(x,y)>.12;
  if(moving){
-  const speed=insideTomb?3.5*dt:5*dt;
-  const mx=(x*Math.cos(angle)+y*Math.sin(angle))*speed;
-  const mz=(x*Math.sin(angle)-y*Math.cos(angle))*speed;
-  player.position.x+=mx;
-  player.position.z+=mz;
-  body.rotation.y=Math.atan2(mx,-mz);
-  steps+=dt*10;
-  legs[0].rotation.x=Math.sin(steps)*.5;
-  legs[1].rotation.x=-Math.sin(steps)*.5;
-  arms[0].rotation.x=-Math.sin(steps)*.3;
-  arms[1].rotation.x=Math.sin(steps)*.3;
+  const speed=(rollTimer>0?11:5)*dt;
+  const forward=-y;
+  const mx=x*Math.cos(angle)-forward*Math.sin(angle);
+  const mz=-x*Math.sin(angle)-forward*Math.cos(angle);
+  player.position.x+=mx*speed;
+  player.position.z+=mz*speed;
+  avatar.rotation.y=Math.atan2(mx,-mz);
+  step+=dt*10;
+  legs[0].rotation.x=Math.sin(step)*.55;
+  legs[1].rotation.x=-Math.sin(step)*.55;
  }else{
   legs.forEach(l=>l.rotation.x*=.8);
-  arms.forEach(a=>a.rotation.x*=.8);
  }
 
- // NPC hareketi
+ if(attackTimer>0){
+  attackTimer-=dt;
+  arms[1].rotation.x=-1.6;
+  arms[1].rotation.z=-.8;
+ }else{
+  arms[1].rotation.x*=.8;
+  arms[1].rotation.z*=.8;
+ }
+ if(rollTimer>0)rollTimer-=dt;
+
+ // NPC yürüyüşü
  for(const n of npcs){
-  if(insideTomb){n.g.visible=false;continue;}
-  n.g.visible=true;
-  n.phase+=dt*.6;
-  const nx=n.home.x+Math.sin(n.phase)*1.8;
-  const nz=n.home.z+Math.cos(n.phase*.7)*1.5;
-  n.g.position.x+=(nx-n.g.position.x)*dt*.5;
-  n.g.position.z+=(nz-n.g.position.z)*dt*.5;
+  n.phase+=dt*.4;
+  n.g.position.x=n.home.x+Math.sin(n.phase)*1.1;
+  n.g.position.z=n.home.z+Math.cos(n.phase*.7)*.8;
  }
 
- // Düşman takibi
- damageCooldown-=dt;
+ // Düşman yapay zekası
+ damageTimer-=dt;
  for(const e of enemies){
-  if(!e.alive||insideTomb)continue;
-  const d=distance(player.position,e.g.position);
-  if(d<10){
+  if(!e.alive)continue;
+  const d=dist(player.position,e.g.position);
+  if(d<13){
    const dx=player.position.x-e.g.position.x;
    const dz=player.position.z-e.g.position.z;
    const len=Math.max(.01,Math.hypot(dx,dz));
-   if(d>1.8){
-    e.g.position.x+=dx/len*dt*.9;
-    e.g.position.z+=dz/len*dt*.9;
-   }else if(damageCooldown<=0){
-    health=Math.max(0,health-8);
-    damageCooldown=1.2;
-    document.getElementById("health").textContent="Can: "+health;
+   if(d>2){
+    e.g.position.x+=dx/len*dt*1.5;
+    e.g.position.z+=dz/len*dt*1.5;
+   }else if(damageTimer<=0){
+    health=Math.max(0,health-10);
+    damageTimer=1.2;
     if(health===0){
-     health=100;player.position.set(0,0,0);
+     health=100;
+     player.position.set(0,0,12);
      say("Yaralandın. Köyde yeniden uyandın.");
-     updateHUD();
-    }else say("Muhafız sana saldırdı! Can: "+health);
+    }else say("Düşman saldırdı! Can: "+health);
+    updateUI();
    }
   }
  }
 
- target.set(
-  player.position.x+Math.sin(angle)*(insideTomb?6:7.5),
-  player.position.y+4.2,
-  player.position.z+Math.cos(angle)*(insideTomb?6:7.5)
+ // Kamera oyuncunun arkasında
+ const distance=9.5;
+ cameraTarget.set(
+  player.position.x+Math.sin(angle)*distance,
+  player.position.y+5.2,
+  player.position.z+Math.cos(angle)*distance
  );
- camera.position.lerp(target,.1);
- camera.lookAt(player.position.x,player.position.y+1.5,player.position.z);
+ camera.position.lerp(cameraTarget,.12);
+ camera.lookAt(player.position.x,player.position.y+1.4,player.position.z);
 
  if(messageTimer>0){
   messageTimer-=dt;
-  if(messageTimer<=0)document.getElementById("message").style.display="none";
+  if(messageTimer<=0)message.style.display="none";
  }
 
- document.getElementById("status").textContent=
- insideTomb?"Firavunun mezarı":moving?"Keşfe devam et":"Çölü keşfet";
+ const px=player.position.x,pz=player.position.z;
+ document.getElementById("area").textContent=
+ Math.hypot(px+25,pz+55)<40?"Giza Piramitleri":
+ Math.hypot(px-45,pz-20)<45?"Mısır Köyü":
+ Math.hypot(px-80,pz-65)<35?"Vaha":
+ "Giza Çölü";
 
  renderer.render(scene,camera);
 }
-updateHUD();
+
+updateUI();
 animate();
 
 addEventListener("resize",()=>{
  camera.aspect=innerWidth/innerHeight;
  camera.updateProjectionMatrix();
- renderer.setPixelRatio(Math.min(devicePixelRatio,1));
+ renderer.setPixelRatio(Math.min(devicePixelRatio,1.25));
  renderer.setSize(innerWidth,innerHeight);
 });
+}catch(e){showError(e.stack||String(e));}
 </script>
 </body>
 </html>
