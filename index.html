@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#19150f">
-<title>MEDJAY — Antik Mısır Keşfi</title>
+<title>MEDJAY 2.1 — Çöl Yenilemesi</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 <style>
 :root{--gold:#edcc83;--glass:rgba(16,19,20,.82);--edge:rgba(237,204,131,.48)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -115,34 +116,78 @@ function startGame(THREE){
 
   function makeMedjay(){
     const g=new THREE.Group(), legs=[], arms=[];
+    const bronze=mat(0x8b6035,.48,.55), leatherDark=mat(0x39271d), clothRed=mat(0x74382b);
+    // Legs, sandals and articulated knees
     for(const side of [-1,1]){
-      const leg=new THREE.Group(); leg.position.set(side*.17,.82,0);
-      const shin=add(new THREE.CapsuleGeometry(.105,.53,4,8),M.skin,0,-.25,0,leg);
-      box(.25,.09,.4,M.leather,0,-.62,.07,leg);
+      const leg=new THREE.Group(); leg.position.set(side*.19,.84,0);
+      add(new THREE.CapsuleGeometry(.115,.56,5,10),M.skin,0,-.25,0,leg);
+      const knee=sphere(.12,M.skin,0,-.02,.015,leg,10);
+      box(.28,.1,.43,leatherDark,0,-.62,.075,leg);
+      box(.29,.055,.28,M.gold,0,-.56,.12,leg);
+      const shinGuard=box(.22,.32,.08,bronze,0,-.36,.115,leg);
       g.add(leg); legs.push(leg);
-      const arm=new THREE.Group(); arm.position.set(side*.34,1.88,0);
-      const upper=add(new THREE.CapsuleGeometry(.095,.43,4,8),M.skin,0,-.24,0,arm);
-      upper.rotation.z=side*.14;
-      cyl(.12,.12,.17,M.gold,0,-.48,0,arm);
+    }
+    // Arms with leather/bronze bracers
+    for(const side of [-1,1]){
+      const arm=new THREE.Group(); arm.position.set(side*.39,1.9,0);
+      const upper=add(new THREE.CapsuleGeometry(.115,.48,5,10),M.skin,0,-.24,0,arm);
+      upper.rotation.z=side*.12;
+      const bracer=cyl(.135,.12,.32,bronze,0,-.47,.01,arm,10);
+      const trim=cyl(.14,.14,.055,M.gold,0,-.33,.01,arm,10);
+      const wrist=cyl(.13,.13,.09,M.gold,0,-.63,.01,arm,10);
       g.add(arm); arms.push(arm);
     }
-    add(new THREE.CapsuleGeometry(.285,.58,5,12),M.linenShade,0,1.65,0,g);
-    const kilt=add(new THREE.CylinderGeometry(.32,.43,.7,12),M.linen,0,1.08,0,g);
-    const sash=box(.13,.94,.075,M.gold,.09,1.65,.27,g); sash.rotation.z=-.4;
-    box(.68,.12,.43,M.leather,0,1.32,0,g);
-    cyl(.12,.13,.2,M.skin,0,2.13,0,g);
-    sphere(.225,M.skin,0,2.4,0,g,16);
-    const hair=sphere(.24,M.black,0,2.44,0,g,16); hair.scale.set(1,.82,1);
-    const cap=add(new THREE.SphereGeometry(.255,16,12,0,Math.PI*2,0,Math.PI*.5),M.blue,0,2.47,0,g);
+    // Tunic, chest armor and layered waist cloth
+    add(new THREE.CapsuleGeometry(.34,.66,6,14),M.linenShade,0,1.68,0,g);
+    const chest=add(new THREE.CapsuleGeometry(.31,.38,5,12),mat(0x806044),0,1.82,.12,g);
+    chest.scale.set(1.02,.9,.82);
+    box(.68,.16,.46,leatherDark,0,1.32,0,g);
+    box(.74,.12,.49,M.gold,0,1.42,0,g);
+    const kilt=add(new THREE.CylinderGeometry(.34,.48,.68,12),M.linen,0,1.08,0,g);
+    const frontPanel=box(.43,.58,.075,M.linenShade,0,1.02,.25,g);
+    frontPanel.rotation.x=-.12;
+    const sideCloth=box(.16,.57,.08,clothRed,.34,1.04,.06,g);sideCloth.rotation.z=-.12;
+    // Diagonal chest strap and medallion
+    const strap=box(.105,1.12,.09,leatherDark,-.12,1.75,.31,g);strap.rotation.z=-.42;
+    const strapEdge=box(.035,1.1,.025,M.gold,-.18,1.76,.365,g);strapEdge.rotation.z=-.42;
+    const medallion=cyl(.12,.12,.06,M.gold,.16,1.57,.39,g,12);medallion.rotation.x=Math.PI/2;
+    // Shoulder guards
     for(const side of [-1,1]){
-      const flap=box(.16,.62,.15,M.blue,side*.24,2.03,.015,g); flap.rotation.z=side*.1;
-      for(let i=0;i<3;i++) box(.17,.025,.17,M.gold,side*.24,2.28-i*.13,.1,g);
+      const pad=sphere(.2,bronze,side*.38,2.02,0,g,12);pad.scale.set(1,.58,.95);
+      sphere(.07,M.gold,side*.39,2.1,.13,g,8);
     }
-    for(const x of [-.087,.087]) sphere(.023,M.black,x,2.4,.207,g,8);
-    const beard=add(new THREE.ConeGeometry(.052,.18,7),M.black,0,2.22,.19,g); beard.rotation.x=-.15;
-    g.userData={legs,arms}; return g;
+    // Back cape, split lower tails
+    const capeMat=clothRed.clone();capeMat.side=THREE.DoubleSide;
+    const capeGeo=new THREE.BufferGeometry();
+    const capeVerts=new Float32Array([
+      -.28,2.03,-.16, .28,2.03,-.16,
+      -.48,.58,-.35, .48,.58,-.35,
+      -.28,.15,-.26, .28,.15,-.26
+    ]);
+    capeGeo.setAttribute('position',new THREE.BufferAttribute(capeVerts,3));
+    capeGeo.setIndex([0,2,1,1,2,3,2,4,3,3,4,5]);capeGeo.computeVertexNormals();
+    const cape=new THREE.Mesh(capeGeo,capeMat);cape.castShadow=true;g.add(cape);
+    // Head, wrapped nemes-style headcloth and face details
+    cyl(.13,.14,.22,M.skin,0,2.16,0,g,12);
+    sphere(.225,M.skin,0,2.42,0,g,16);
+    const hair=sphere(.238,M.black,0,2.45,0,g,16);hair.scale.set(1,.82,1);
+    const cap=add(new THREE.SphereGeometry(.27,18,12,0,Math.PI*2,0,Math.PI*.58),M.blue,0,2.48,0,g);
+    for(const side of [-1,1]){
+      const flap=box(.19,.68,.18,M.blue,side*.25,2.03,.005,g);flap.rotation.z=side*.1;
+      for(let i=0;i<3;i++)box(.2,.035,.19,M.gold,side*.25,2.28-i*.14,.105,g);
+      sphere(.028,M.gold,side*.2,2.5,.17,g,8);
+    }
+    for(const x of [-.09,.09]){
+      sphere(.025,M.black,x,2.42,.205,g,8);
+      box(.075,.018,.025,M.black,x,2.47,.205,g);
+    }
+    const beard=add(new THREE.ConeGeometry(.065,.2,8),M.black,0,2.22,.19,g);beard.rotation.x=-.12;
+    // Sword and sheath on the left hip
+    const sheath=box(.11,.78,.13,leatherDark,-.43,1.12,-.02,g);sheath.rotation.z=-.28;
+    const hilt=cyl(.045,.045,.28,M.gold,-.52,1.58,-.02,g,8);hilt.rotation.z=Math.PI/2;
+    box(.23,.06,.07,M.gold,-.52,1.57,-.02,g);
+    g.userData={legs,arms,cape};return g;
   }
-
   function palm(x,z){
     cyl(.27,.42,6.5,mat(0x75502e),x,3.25,z);
     for(let i=0;i<8;i++){
@@ -201,6 +246,30 @@ function startGame(THREE){
     sphere(.31,jm,0,.72,0,g,10).scale.y=.75;
     cyl(.13,.13,.12,M.gold,0,.96,0,g,10);
   }
+  function makeDune(x,z,rx,rz,height,seed=1){
+    const rings=12,segments=40,verts=[],indices=[];
+    for(let r=0;r<=rings;r++){
+      const t=r/rings;
+      for(let i=0;i<=segments;i++){
+        const a=i/segments*Math.PI*2;
+        const wav=1+.055*Math.sin(a*3+seed)+.035*Math.cos(a*5-seed);
+        const rr=t*wav;
+        const y=height*Math.pow(Math.max(0,1-t*t),1.55)*(0.94+.06*Math.sin(a*2+seed));
+        verts.push(Math.cos(a)*rx*rr,y,Math.sin(a)*rz*rr);
+      }
+    }
+    for(let r=0;r<rings;r++)for(let i=0;i<segments;i++){
+      const a=r*(segments+1)+i,b=a+segments+1;
+      indices.push(a,b,a+1,b,b+1,a+1);
+    }
+    const geo=new THREE.BufferGeometry();
+    geo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));
+    geo.setIndex(indices);geo.computeVertexNormals();
+    const mesh=new THREE.Mesh(geo,mat(0xcaa36e));
+    mesh.position.set(x,-.12,z);mesh.receiveShadow=true;mesh.castShadow=true;
+    scene.add(mesh);return mesh;
+  }
+
   function createWorld(){
     scene=new THREE.Scene();
     scene.background=new THREE.Color(0x9fc6d4);
@@ -208,7 +277,7 @@ function startGame(THREE){
     scene.add(new THREE.HemisphereLight(0xffe9ce,0x725333,2.05));
     const sun=new THREE.DirectionalLight(0xffdfad,2.7);
     sun.position.set(-65,95,35); sun.castShadow=true;
-    sun.shadow.mapSize.set(1024,1024);
+    sun.shadow.mapSize.set(1536,1536);
     sun.shadow.camera.left=-115; sun.shadow.camera.right=115;
     sun.shadow.camera.top=115; sun.shadow.camera.bottom=-115;
     scene.add(sun);
@@ -219,6 +288,20 @@ function startGame(THREE){
       const d=sphere(1, [M.sand,M.paleSand,M.sandstone][i%3],
         (Math.random()-.5)*420,-2.6,-30-Math.random()*360,scene,12);
       d.scale.set(15+Math.random()*30,2.3+Math.random()*4.8,10+Math.random()*24);
+    }
+    // Sculpted dune ridges frame the playable valley without blocking the main routes.
+    [
+      [-150,-35,48,34,12,1],[-118,-92,38,25,9,2],[-178,-165,54,38,16,3],
+      [155,-42,52,32,13,4],[174,-118,46,31,12,5],[145,-205,62,42,18,6],
+      [-205,-265,58,44,19,7],[205,-310,70,48,21,8],[-92,85,42,27,10,9],
+      [100,95,48,30,11,10],[-235,-65,52,34,14,11],[235,-150,58,40,17,12]
+    ].forEach(v=>makeDune(...v));
+    // Wind-carved smaller ridges and stone outcrops.
+    for(let i=0;i<34;i++){
+      const x=(Math.random()-.5)*340,z=-25-Math.random()*300;
+      const rock=sphere(.8,M.edgeStone,x,.25,z,scene,9);
+      rock.scale.set(1.5+Math.random()*2,.55+Math.random()*.6,1+Math.random()*2);
+      rock.rotation.y=Math.random()*Math.PI;
     }
     pyramid(-105,-195,39); pyramid(115,-260,53); pyramid(-185,-315,48); pyramid(-55,-125,25,0xc4a779);
 
@@ -302,6 +385,54 @@ function startGame(THREE){
     const halo=add(new THREE.TorusGeometry(1.5,.09,8,32),M.gold,0,.12,0,marker);
     halo.rotation.x=Math.PI/2; marker.position.set(8,0,-132);
     marker.userData.halo=halo;
+  }
+
+
+  async function loadDetailedModels(){
+    const {GLTFLoader}=await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js');
+    const loader=new GLTFLoader();
+    const assets=[
+      {file:'great-sandstone-sphinx.glb',x:-83,z:-112,size:20},
+      {file:'desert-step-pyramid.glb',x:-145,z:-215,size:36},
+      {file:'desert-temple-hall.glb',x:12,z:-205,size:34},
+      {file:'pharaoh-colossi-gate.glb',x:72,z:-155,size:24},
+      {file:'desert-camel-caravan.glb',x:-48,z:48,size:17},
+      {file:'desert-bazaar-stall.glb',x:-58,z:34,size:12},
+      {file:'desert-tomb-entrance.glb',x:116,z:-78,size:19},
+      {file:'desert-obelisk-set.glb',x:67,z:-218,size:17},
+      {file:'desert-oasis-camp.glb',x:75,z:35,size:22},
+      {file:'sandstone-ruin-kit.glb',x:-112,z:-65,size:18}
+    ];
+    let loaded=0;
+    const jobs=assets.map(item=>new Promise(resolve=>{
+      loader.load('./'+item.file,gltf=>{
+        const model=gltf.scene;
+        model.updateMatrixWorld(true);
+        let bounds=new THREE.Box3().setFromObject(model);
+        const dims=new THREE.Vector3(); bounds.getSize(dims);
+        const maxDim=Math.max(dims.x,dims.y,dims.z);
+        if(!Number.isFinite(maxDim)||maxDim<.001){resolve(false);return}
+        const targetScale=item.size/maxDim;
+        model.scale.setScalar(targetScale);
+        model.updateMatrixWorld(true);
+        bounds=new THREE.Box3().setFromObject(model);
+        const center=new THREE.Vector3();bounds.getCenter(center);
+        model.position.set(item.x-center.x*targetScale,-bounds.min.y,item.z-center.z*targetScale);
+        model.traverse(o=>{
+          if(o.isMesh){
+            o.castShadow=false;o.receiveShadow=false;
+            if(o.material){o.material.side=THREE.FrontSide}
+          }
+        });
+        scene.add(model);
+        loaded++;resolve(true);
+      },undefined,err=>{console.warn('Model yüklenemedi:',item.file,err);resolve(false)});
+    }));
+    const results=await Promise.all(jobs);
+    const success=results.filter(Boolean).length;
+    if(success) toast(`${success} yüksek detaylı Mısır modeli yüklendi.`);
+    else toast('3D modeller yüklenemedi; temel dünya açık.');
+    return success;
   }
 
   function resize(){
@@ -436,6 +567,7 @@ function startGame(THREE){
     clock=new THREE.Clock();
     createWorld();
     resize(); controls(); animate();
+    loadDetailedModels().catch(err=>{console.warn(err);toast('Ek modeller yüklenemedi; temel oyun çalışıyor.')});
     addEventListener('resize',resize);
     addEventListener('orientationchange',()=>setTimeout(resize,220));
     if(window.visualViewport) visualViewport.addEventListener('resize',resize);
