@@ -148,6 +148,189 @@ for(let i=0;i<35;i++){
  r.rotation.set(Math.random(),Math.random(),Math.random());
 }
 
+// =====================================
+// V25 - ACIK DUNYA: KOY, VAHA VE YOLLAR
+// =====================================
+
+const roadMat = material(0xc49a69);
+const houseMat = material(0xb99568);
+const roofMat = material(0x79563b);
+const awningMat = material(0x9b4930);
+const oasisWater = material(0x438d91);
+const marketMat = material(0x795035);
+
+// Kum yolu
+function makeRoad(x,z,w,h,rotation=0){
+ const road=mesh(new THREE.PlaneGeometry(w,h),roadMat,x,.015,z);
+ road.rotation.x=-Math.PI/2;
+ road.rotation.z=rotation;
+ return road;
+}
+
+// Köy evleri
+function makeHouse(x,z,size=1){
+ const g=new THREE.Group();
+ scene.add(g);
+ g.position.set(x,0,z);
+
+ mesh(new THREE.BoxGeometry(5*size,3*size,4*size),
+ houseMat,0,1.5*size,0,1,1,1,g);
+
+ // Düz çatı
+ mesh(new THREE.BoxGeometry(5.4*size,.35*size,4.4*size),
+ roofMat,0,3.1*size,0,1,1,1,g);
+
+ // Kapı
+ mesh(new THREE.BoxGeometry(.9*size,1.8*size,.12*size),
+ darkLeather,0,.9*size,-2.05*size,1,1,1,g);
+
+ // Küçük pencere
+ mesh(new THREE.BoxGeometry(.65*size,.65*size,.13*size),
+ darkStone,1.45*size,2*size,-2.06*size,1,1,1,g);
+
+ // Ev önü basamağı
+ mesh(new THREE.BoxGeometry(1.4*size,.2*size,.7*size),
+ pale,0,.1*size,-2.35*size,1,1,1,g);
+
+ return g;
+}
+
+// Ana köy meydanı
+makeRoad(37,-5,17,65,0);
+makeRoad(29,-10,48,10,0);
+makeRoad(43,15,40,8,.15);
+
+// Köy evleri
+makeHouse(27,-8,1);
+makeHouse(43,-10,.9);
+makeHouse(28,8,.85);
+makeHouse(48,7,1);
+makeHouse(37,23,.95);
+makeHouse(55,-1,.8);
+
+// Pazar tezgahları
+function marketStall(x,z){
+ const g=new THREE.Group();
+ scene.add(g);
+ g.position.set(x,0,z);
+
+ mesh(new THREE.BoxGeometry(3,1.1,1.8),marketMat,0,.7,0,1,1,1,g);
+
+ // Tezgah örtüsü
+ mesh(new THREE.BoxGeometry(3.5,.18,2.2),awningMat,0,1.45,0,1,1,1,g);
+
+ // Direkler
+ for(const sx of [-1.45,1.45]){
+  for(const sz of [-.85,.85]){
+   mesh(new THREE.CylinderGeometry(.055,.055,2,5),
+   darkLeather,sx,1,sz,1,1,1,g);
+  }
+ }
+
+ // Küpler ve sepetler
+ for(let i=0;i<3;i++){
+  mesh(new THREE.SphereGeometry(.22,7,5),
+  i===1?gold:green,-.8+i*.8,1.35,-.3,1,1,1,g);
+ }
+}
+marketStall(32,-18);
+marketStall(41,-19);
+marketStall(36,-23);
+
+// Köyün ambarı
+const barn=mesh(new THREE.BoxGeometry(8,4,7),roofMat,57,2,17);
+mesh(new THREE.ConeGeometry(6,2.5,4),darkStone,57,5.1,17,1,1,1);
+
+// Vaha
+function makeOasis(x,z){
+ // Su
+ const pond=mesh(new THREE.CircleGeometry(8,24),oasisWater,x,.025,z);
+ pond.rotation.x=-Math.PI/2;
+
+ // Kum kıyısı
+ const shore=mesh(new THREE.TorusGeometry(8.5,.8,5,24),pale,x,.04,z);
+ shore.rotation.x=Math.PI/2;
+
+ // Çevresindeki bitkiler
+ for(let i=0;i<9;i++){
+  const a=i*Math.PI*2/9;
+  const px=x+Math.cos(a)*11;
+  const pz=z+Math.sin(a)*11;
+
+  const trunk=mesh(
+   new THREE.CylinderGeometry(.18,.3,4.5,6),
+   darkStone,px,2.25,pz
+  );
+
+  for(let j=0;j<5;j++){
+   const b=j*Math.PI*2/5;
+   const leaf=mesh(
+    new THREE.ConeGeometry(.45,3.5,5),
+    green,
+    px+Math.cos(b)*1.2,4.4,pz+Math.sin(b)*1.2
+   );
+   leaf.rotation.z=-Math.cos(b)*.8;
+   leaf.rotation.x=Math.sin(b)*.8;
+  }
+ }
+}
+makeOasis(65,48);
+
+// Vahaya giden yol
+makeRoad(54,34,8,38,-.4);
+
+// Antik harabeler
+function makeRuins(x,z){
+ const g=new THREE.Group();
+ scene.add(g);
+ g.position.set(x,0,z);
+
+ mesh(new THREE.BoxGeometry(12,.5,9),darkStone,0,.25,0,1,1,1,g);
+
+ for(let i=0;i<4;i++){
+  const px=(i%2)*8-4;
+  const pz=Math.floor(i/2)*5-2.5;
+  mesh(new THREE.CylinderGeometry(.55,.7,4.5,7),
+  stone,px,2.5,pz,1,1,1,g);
+ }
+
+ mesh(new THREE.BoxGeometry(11,.7,1.2),pale,0,4.8,-2.5,1,1,1,g);
+ mesh(new THREE.BoxGeometry(11,.7,1.2),pale,0,4.8,2.5,1,1,1,g);
+}
+makeRuins(-35,35);
+makeRuins(75,-40);
+
+// Uzak keşif noktaları
+function landmark(x,z){
+ mesh(new THREE.CylinderGeometry(2.5,3.2,5,6),
+ darkStone,x,2.5,z);
+ mesh(new THREE.ConeGeometry(3,2,6),
+ stone,x,6,z);
+}
+landmark(-65,-65);
+landmark(70,65);
+landmark(5,-75);
+
+// Haritada taş işaretleri
+for(let i=0;i<12;i++){
+ const x=-85+Math.random()*170;
+ const z=-85+Math.random()*170;
+ if(Math.abs(x)<15 && Math.abs(z)<15)continue;
+ mesh(new THREE.DodecahedronGeometry(.8,0),
+ darkStone,x,.5,z,1.2,.8,1);
+}
+
+// Köyün giriş kemeri
+const gate=new THREE.Group();
+scene.add(gate);
+gate.position.set(37,0,-32);
+
+mesh(new THREE.BoxGeometry(1.2,5,1.2),stone,-3,2.5,0,1,1,1,gate);
+mesh(new THREE.BoxGeometry(1.2,5,1.2),stone,3,2.5,0,1,1,1,gate);
+mesh(new THREE.BoxGeometry(8,1.2,1.5),darkStone,0,5,0,1,1,1,gate);
+
+console.log("Kayıp Firavun v25 açık dünya yüklendi");
+
 // BAYEK ESİNTİLİ MEDJAY KARAKTERİ
 const player=new THREE.Group();
 scene.add(player);
