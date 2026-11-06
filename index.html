@@ -205,73 +205,167 @@ scene.add(r);
 }
 
 // Oyuncu
-const player=new THREE.Group();
-const skin=mat(0xa96e4b);
-const cloth=mat(0xe9d6ae);
-const belt=mat(0x80502e);
-const gold=mat(0xd7a747);
-const dark=mat(0x342820);
 
-const torso=new THREE.Mesh(
-new THREE.CylinderGeometry(.39,.52,1.15,10),cloth
-);
-torso.position.y=1.5;
-player.add(torso);
-
-const head=new THREE.Mesh(
-new THREE.SphereGeometry(.32,12,10),skin
-);
-head.scale.set(.9,1.15,.9);
-head.position.y=2.35;
-player.add(head);
-
-const hair=new THREE.Mesh(
-new THREE.SphereGeometry(.34,10,8),dark
-);
-hair.scale.set(1,.5,1);
-hair.position.y=2.57;
-player.add(hair);
-
-const waist=new THREE.Mesh(
-new THREE.CylinderGeometry(.48,.42,.24,10),belt
-);
-waist.position.y=.92;
-player.add(waist);
-
-const limbs=[];
-
-function limb(x,y,z,length,r,material){
-const pivot=new THREE.Group();
-pivot.position.set(x,y,z);
-const mesh=new THREE.Mesh(
-new THREE.CylinderGeometry(r*.8,r,length,8),material
-);
-mesh.position.y=-length/2;
-pivot.add(mesh);
-player.add(pivot);
-limbs.push(pivot);
-}
-
-limb(-.53,1.9,0,.85,.17,skin);
-limb(.53,1.9,0,.85,.17,skin);
-limb(-.24,.82,0,.95,.2,skin);
-limb(.24,.82,0,.95,.2,skin);
-
-player.position.set(0,0,4);
+// BAYEK TARZI MEDJAY KARAKTERİ
+const player = new THREE.Group();
 scene.add(player);
 
-const band=new THREE.Mesh(
-new THREE.TorusGeometry(.29,.055,6,16),gold
-);
-band.position.y=2.46;
-band.rotation.x=Math.PI/2;
-player.add(band);
+const body = new THREE.Group();
+player.add(body);
 
-const amulet=new THREE.Mesh(
-new THREE.BoxGeometry(.23,.28,.09),gold
-);
-amulet.position.set(0,1.55,.4);
-player.add(amulet);
+const leather = mat(0x593923);
+const leatherLight = mat(0x805333);
+const cloth = mat(0xc5aa7d);
+const darkLeather = mat(0x30231b);
+const bronze = mat(0x9d7137);
+const metal = mat(0x9a9a8a);
+const skinTone = mat(0x956747);
+const hoodMat = mat(0x49382c);
+
+function part(geo, material, x,y,z, sx=1,sy=1,sz=1, parent=body) {
+  const m = new THREE.Mesh(geo,material);
+  m.position.set(x,y,z);
+  m.scale.set(sx,sy,sz);
+  parent.add(m);
+  return m;
+}
+
+// Bacaklar ve kumaş altlık
+const legs = [];
+for (const side of [-1,1]) {
+  const leg = part(
+    new THREE.CylinderGeometry(.16,.19,.9,7),
+    leatherLight, side*.2,.55,0
+  );
+  legs.push(leg);
+
+  part(new THREE.BoxGeometry(.34,.2,.48),darkLeather,
+    side*.2,.12,-.08);
+
+  // Diz koruması
+  part(new THREE.BoxGeometry(.32,.25,.22),leather,
+    side*.2,.68,-.12);
+}
+
+// Uzun tunik
+part(new THREE.CylinderGeometry(.39,.52,1.2,8),
+  cloth,0,1.55,0);
+
+// Göğüs deri zırhı
+part(new THREE.BoxGeometry(.78,.85,.18),
+  leather,0,1.75,-.27);
+
+// Göğüs çapraz kayışları
+const strap1 = part(new THREE.BoxGeometry(.13,1.05,.12),
+  leatherLight,-.12,1.78,-.39);
+strap1.rotation.z=-.42;
+
+const strap2 = part(new THREE.BoxGeometry(.11,.9,.12),
+  darkLeather,.2,1.8,-.4);
+strap2.rotation.z=.5;
+
+// Omuzluklar
+part(new THREE.SphereGeometry(.25,8,6),
+  leatherLight,-.48,2.02,0,1,.75,1);
+part(new THREE.SphereGeometry(.25,8,6),
+  leatherLight,.48,2.02,0,1,.75,1);
+
+// Bel kemeri
+part(new THREE.BoxGeometry(.85,.16,.55),
+  darkLeather,0,1.12,0);
+part(new THREE.BoxGeometry(.2,.19,.08),
+  bronze,0,1.12,-.3);
+
+// Belden sarkan kumaş parçaları
+for(let i=-1;i<=1;i++){
+  part(new THREE.BoxGeometry(.25,.65,.08),
+    i===0?cloth:leatherLight,i*.24,.72,-.24);
+}
+
+// Boyun ve kafa
+part(new THREE.CylinderGeometry(.14,.15,.25,8),
+  skinTone,0,2.28,0);
+part(new THREE.SphereGeometry(.31,10,8),
+  skinTone,0,2.57,0);
+
+// Kapüşon
+part(new THREE.SphereGeometry(.39,10,8),
+  hoodMat,0,2.75,.04,1,1.05,1.05);
+
+// Kapüşonun yan kumaşları
+part(new THREE.BoxGeometry(.18,.65,.3),
+  hoodMat,-.3,2.55,.02);
+part(new THREE.BoxGeometry(.18,.65,.3),
+  hoodMat,.3,2.55,.02);
+
+// Kapüşonun alın kenarı
+part(new THREE.BoxGeometry(.66,.13,.23),
+  leatherLight,0,2.79,-.25);
+
+// Yüzün önündeki kumaş gölgesi
+part(new THREE.BoxGeometry(.48,.12,.12),
+  darkLeather,0,2.42,-.29);
+
+// Kollar
+const arms=[];
+for(const side of [-1,1]){
+  const arm=part(new THREE.CylinderGeometry(.13,.17,.82,7),
+    skinTone,side*.52,1.65,0);
+  arm.rotation.z=side*.17;
+  arms.push(arm);
+
+  // Kol zırhları
+  part(new THREE.BoxGeometry(.25,.36,.28),
+    leatherLight,side*.58,1.48,-.04);
+
+  // Bileklik
+  part(new THREE.CylinderGeometry(.17,.17,.16,8),
+    bronze,side*.58,1.27,0);
+}
+
+// Sırttaki yay
+const bowGroup = new THREE.Group();
+body.add(bowGroup);
+bowGroup.position.set(.42,1.75,.28);
+bowGroup.rotation.z=-.15;
+
+const bow = part(new THREE.TorusGeometry(.55,.035,5,12,Math.PI),
+  leatherLight,0,0,0,1,1,1,bowGroup);
+bow.rotation.z=Math.PI/2;
+
+// Yay kirişi
+const string = part(new THREE.CylinderGeometry(.012,.012,1.1,4),
+  cloth,0,0,0,1,1,1,bowGroup);
+string.rotation.z=Math.PI/2;
+
+// Ok kılıfı
+part(new THREE.CylinderGeometry(.13,.17,.8,7),
+  darkLeather,.2,1.9,.38,1,1,1);
+for(let i=0;i<4;i++){
+  const arrow=part(new THREE.CylinderGeometry(.018,.018,.95,4),
+    cloth,.08+i*.075,2.45,.38);
+  arrow.rotation.x=.12;
+}
+
+// Belde kılıç
+const sword = new THREE.Group();
+body.add(sword);
+sword.position.set(.55,1.1,-.05);
+sword.rotation.z=-.35;
+
+part(new THREE.BoxGeometry(.09,.65,.07),
+  metal,0,-.35,0,1,1,1,sword);
+part(new THREE.BoxGeometry(.3,.09,.1),
+  bronze,0,-.05,0,1,1,1,sword);
+part(new THREE.CylinderGeometry(.045,.045,.25,6),
+  darkLeather,0,.12,0,1,1,1,sword);
+
+// Küçük omuz kumaşı
+part(new THREE.BoxGeometry(.38,.55,.12),
+  cloth,-.43,1.65,.12);
+
+// Animasyon için başlangıç duruşu
+body.rotation.y=0;
 
 // Hareket kontrolü
 let joyX=0,joyY=0,angle=0,walking=false;
