@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#19150f">
-<title>MEDJAY 2.1 — Çöl Yenilemesi</title>
+<title>MEDJAY 3.2 — Kartal, Kayalıklar ve Medjay</title>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 <style>
 :root{--gold:#edcc83;--glass:rgba(16,19,20,.82);--edge:rgba(237,204,131,.48)}
@@ -54,10 +54,10 @@ button:active,button.active{filter:brightness(1.4);transform:scale(.96)}
   <div id="counter">KUTSAL ESERLER &nbsp;<strong><span id="found">0</span> / 6</strong></div>
   <div id="toast"></div>
   <div id="stick"><div id="nub"></div></div>
-  <div class="actions"><button id="run">KOŞ</button><button id="jump">ZIPLA</button><button id="scout">ŞAHİN</button><button class="primary" id="act">İNCELE</button></div>
-  <div id="help">SOL JOYSTICK: HAREKET &nbsp; • &nbsp; SAĞ TARAFI SÜRÜKLE: KAMERA &nbsp; • &nbsp; ŞAHİN: HAVADAN KEŞİF &nbsp; • &nbsp; İNCELE: ETKİLEŞİM</div>
+  <div class="actions"><button id="run">KOŞ</button><button id="jump">ZIPLA</button><button id="scout">KARTAL</button><button class="primary" id="act">İNCELE</button></div>
+  <div id="help">SOL JOYSTICK: HAREKET &nbsp; • &nbsp; SAĞ TARAFI SÜRÜKLE: KAMERA &nbsp; • &nbsp; KARTAL: HAVADAN KEŞİF &nbsp; • &nbsp; İNCELE: ETKİLEŞİM</div>
 </div>
-<div id="loading"><div class="loadcard"><h1>MEDJAY</h1><p id="loadtext">Antik Mısır dünyası hazırlanıyor…</p><div id="loadbar"><div id="loadfill"></div></div><button id="retry">TEKRAR DENE</button></div></div>
+<div id="loading"><div class="loadcard"><h1>MEDJAY</h1><p id="loadtext">Gerçek 3D Mısır dünyası hazırlanıyor…</p><div id="loadbar"><div id="loadfill"></div></div><button id="retry">TEKRAR DENE</button></div></div>
 
 <script type="module">
 const $ = id => document.getElementById(id);
@@ -183,6 +183,24 @@ function startGame(THREE){
       box(.075,.018,.025,M.black,x,2.47,.205,g);
     }
     const beard=add(new THREE.ConeGeometry(.065,.2,8),M.black,0,2.22,.19,g);beard.rotation.x=-.12;
+    // More complete Medjay silhouette: layered chest harness, arm bands, belt pouches and back gear.
+    for(const side of [-1,1]){
+      const band=cyl(.13,.13,.09,leatherDark,side*.39,1.72,.01,g,10); band.rotation.z=Math.PI/2;
+      const pouch=box(.19,.24,.16,leatherDark,side*.28,1.23,-.22,g); pouch.rotation.z=side*.12;
+      sphere(.045,M.gold,side*.28,1.25,-.31,g,8);
+    }
+    for(let i=0;i<4;i++){
+      const scale=box(.035,.34,.035,M.gold,-.18+i*.12,1.8,.365,g); scale.rotation.z=-.42;
+    }
+    // Shoulder leather straps and a compact bow/quiver on the back.
+    const quiver=cyl(.12,.16,.82,leatherDark,.27,1.72,-.34,g,10); quiver.rotation.x=-.18;
+    for(let i=0;i<3;i++)cyl(.17,.17,.045,M.gold,.27,1.45+i*.22,-.34,g,10);
+    const bow=add(new THREE.TorusGeometry(.42,.035,7,22,Math.PI),leatherDark,-.3,1.8,-.39,g);bow.rotation.z=Math.PI/2;
+    // Nose, eyebrows and cheek definition improve the face at normal camera distance.
+    const nose=add(new THREE.ConeGeometry(.045,.13,6),M.skin,0,2.39,.225,g);nose.rotation.x=Math.PI/2;
+    for(const x of [-.09,.09]){
+      const brow=box(.095,.028,.035,M.black,x,2.49,.205,g); brow.rotation.z=x<0?-.08:.08;
+    }
     // Sword and sheath on the left hip
     const sheath=box(.11,.78,.13,leatherDark,-.43,1.12,-.02,g);sheath.rotation.z=-.28;
     const hilt=cyl(.045,.045,.28,M.gold,-.52,1.58,-.02,g,8);hilt.rotation.z=Math.PI/2;
@@ -297,6 +315,27 @@ function startGame(THREE){
       [-205,-265,58,44,19,7],[205,-310,70,48,21,8],[-92,85,42,27,10,9],
       [100,95,48,30,11,10],[-235,-65,52,34,14,11],[235,-150,58,40,17,12]
     ].forEach(v=>makeDune(...v));
+    // Layered sandstone escarpments and broken mesas make the horizon feel mountainous.
+    const cliffMat=mat(0x987b58), cliffLight=mat(0xb5966d), darkRock=mat(0x766047);
+    const mesas=[[-190,-8,23,19,17],[-205,-118,28,22,24],[205,-72,25,18,20],[198,-230,31,24,28],[-168,-330,34,27,31],[172,-345,38,26,34],[-72,112,24,17,15],[112,120,27,20,17]];
+    mesas.forEach(([x,z,w,d,h],idx)=>{
+      const base=add(new THREE.DodecahedronGeometry(1,1),cliffMat,x,h*.35,z);
+      base.scale.set(w,h*.72,d); base.rotation.y=idx*.63; base.rotation.z=.08;
+      const cap=add(new THREE.DodecahedronGeometry(1,0),cliffLight,x+3,h*.82,z-2);
+      cap.scale.set(w*.72,h*.42,d*.78); cap.rotation.y=idx*.41;
+      for(let k=0;k<5;k++){
+        const shard=add(new THREE.ConeGeometry(2+Math.random()*2,5+Math.random()*9,5),darkRock,
+          x+(Math.random()-.5)*w*1.2,2+Math.random()*4,z+(Math.random()-.5)*d*1.2);
+        shard.rotation.z=(Math.random()-.5)*.24; shard.rotation.x=(Math.random()-.5)*.2;
+      }
+    });
+    // Scattered angular boulders around the valley floor.
+    for(let i=0;i<58;i++){
+      const x=(Math.random()-.5)*300,z=35-Math.random()*340;
+      if(Math.abs(x)<27 && z>-5) continue;
+      const b=add(new THREE.DodecahedronGeometry(.8,0),i%3?darkRock:cliffLight,x,.55+Math.random()*1.2,z);
+      b.scale.set(1+Math.random()*2,.7+Math.random()*1.8,1+Math.random()*2);b.rotation.set(Math.random(),Math.random()*3,Math.random());
+    }
     // Wind-carved smaller ridges and stone outcrops.
     for(let i=0;i<34;i++){
       const x=(Math.random()-.5)*340,z=-25-Math.random()*300;
@@ -368,16 +407,21 @@ function startGame(THREE){
     }
 
     player=makeMedjay(); player.position.set(0,0,13); scene.add(player);
-    // Original falcon companion for a short aerial reconnaissance pulse.
+    // Original articulated falcon companion: body, tail, head and animated hinged wings.
     scoutBird=new THREE.Group();
-    const birdBody=sphere(.34,mat(0x6b5137),0,0,0,scoutBird,12); birdBody.scale.set(1.5,.65,.7);
-    sphere(.2,mat(0x8b6b45),.38,.08,.02,scoutBird,10);
-    const beak=add(new THREE.ConeGeometry(.075,.24,6),M.gold,.58,.02,.03,scoutBird);beak.rotation.z=-Math.PI/2;
+    const birdBody=sphere(.34,mat(0x705239),0,0,0,scoutBird,14); birdBody.scale.set(1.55,.62,.72);
+    sphere(.19,mat(0x92724b),.39,.1,.015,scoutBird,12);
+    const beak=add(new THREE.ConeGeometry(.075,.25,6),M.gold,.59,.08,.02,scoutBird);beak.rotation.z=-Math.PI/2;
+    sphere(.035,M.black,.46,.15,.16,scoutBird,8);
     for(const side of [-1,1]){
-      const wing=box(.72,.07,.32,mat(0x3e3024),-.02,.1,side*.3,scoutBird);wing.rotation.z=side*.15;
+      const wingPivot=new THREE.Group();wingPivot.position.set(-.04,.08,side*.2);scoutBird.add(wingPivot);
+      const wing=add(new THREE.BufferGeometry(),mat(0x493729),0,0,0,wingPivot);
+      const shape=new THREE.Shape();shape.moveTo(0,0);shape.quadraticCurveTo(-.45,.48,-1.28,.25);shape.quadraticCurveTo(-.88,-.04,-.18,-.12);shape.lineTo(0,0);
+      wing.geometry=new THREE.ShapeGeometry(shape,8);wing.rotation.x=side*.12;
+      wingPivot.userData.side=side;wingPivot.userData.base=wingPivot.rotation.z;scoutBird.userData.wings??=[];scoutBird.userData.wings.push(wingPivot);
     }
+    const tail=add(new THREE.ConeGeometry(.2,.72,5),mat(0x493729),-.55,-.02,0,scoutBird);tail.rotation.z=Math.PI/2;
     scoutBird.visible=false;scene.add(scoutBird);
-
     // Six relics on pedestals
     const positions=[[-74,-56],[-40,21],[15,-61],[55,-108],[99,-50],[122,-132]];
     positions.forEach(([x,z],i)=>{
@@ -402,60 +446,75 @@ function startGame(THREE){
     const {GLTFLoader}=await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js');
     const loader=new GLTFLoader();
     const assets=[
-      {file:'great-sandstone-sphinx.glb',x:-83,z:-112,size:20},
-      {file:'desert-step-pyramid.glb',x:-145,z:-215,size:36},
-      {file:'desert-temple-hall.glb',x:12,z:-205,size:34},
-      {file:'pharaoh-colossi-gate.glb',x:72,z:-155,size:24},
-      {file:'desert-camel-caravan.glb',x:-48,z:48,size:17},
-      {file:'desert-bazaar-stall.glb',x:-58,z:34,size:12},
-      {file:'desert-tomb-entrance.glb',x:116,z:-78,size:19},
-      {file:'desert-obelisk-set.glb',x:67,z:-218,size:17},
-      {file:'desert-oasis-camp.glb',x:75,z:35,size:22},
-      {file:'sandstone-ruin-kit.glb',x:-112,z:-65,size:18},
-      {file:'desert-city-gate.glb',x:5,z:64,size:27},
-      {file:'desert-tent-camp.glb',x:-105,z:68,size:24},
-      {file:'desert-dig-site.glb',x:142,z:-42,size:22},
-      {file:'desert-tomb-terrain-kit.glb',x:158,z:-112,size:34},
-      {file:'tomb-trap-corridor.glb',x:166,z:-116,size:16},
-      {file:'desert-treasure-vault.glb',x:172,z:-127,size:17},
-      {file:'desert-throne-room.glb',x:35,z:-230,size:27},
-      {file:'royal-desert-sarcophagus.glb',x:174,z:-134,size:9},
-      {file:'desert-relics-set.glb',x:-8,z:-72,size:12},
-      {file:'desert-carved-tablets.glb',x:-122,z:-83,size:16},
-      {file:'desert-well.glb',x:-75,z:61,size:12},
-      {file:'buried-reed-boat.glb',x:45,z:-16,size:14},
-      {file:'desert-animals-set.glb',x:92,z:50,size:17},
-      {file:'mud-brick-desert-house.glb',x:-84,z:28,size:14}
+      // The first landmark cluster is deliberately close to the spawn point,
+      // so the new models are immediately visible instead of being kilometres away.
+      {file:'desert-city-gate.glb',x:0,z:-34,size:28},
+      {file:'great-sandstone-sphinx.glb',x:-23,z:-57,size:21},
+      {file:'desert-step-pyramid.glb',x:43,z:-103,size:43},
+      {file:'desert-temple-hall.glb',x:5,z:-160,size:39},
+      {file:'pharaoh-colossi-gate.glb',x:34,z:-137,size:26},
+      {file:'desert-camel-caravan.glb',x:-23,z:29,size:18},
+      {file:'desert-bazaar-stall.glb',x:18,z:24,size:14},
+      {file:'desert-oasis-camp.glb',x:59,z:28,size:23},
+      {file:'desert-tomb-entrance.glb',x:88,z:-72,size:21},
+      {file:'desert-obelisk-set.glb',x:-58,z:-112,size:18},
+      {file:'sandstone-ruin-kit.glb',x:-88,z:-62,size:19},
+      {file:'desert-tent-camp.glb',x:-103,z:63,size:24},
+      {file:'desert-dig-site.glb',x:125,z:-39,size:23},
+      {file:'desert-tomb-terrain-kit.glb',x:148,z:-112,size:35},
+      {file:'tomb-trap-corridor.glb',x:157,z:-120,size:17},
+      {file:'desert-treasure-vault.glb',x:164,z:-137,size:18},
+      {file:'desert-throne-room.glb',x:34,z:-225,size:28},
+      {file:'royal-desert-sarcophagus.glb',x:172,z:-145,size:10},
+      {file:'desert-relics-set.glb',x:-8,z:-72,size:13},
+      {file:'desert-carved-tablets.glb',x:-122,z:-83,size:17},
+      {file:'desert-well.glb',x:-75,z:61,size:13},
+      {file:'buried-reed-boat.glb',x:45,z:-16,size:15},
+      {file:'desert-animals-set.glb',x:92,z:50,size:18},
+      {file:'mud-brick-desert-house.glb',x:-84,z:28,size:15}
     ];
-    let loaded=0;
-    const jobs=assets.map(item=>new Promise(resolve=>{
-      loader.load('./'+item.file,gltf=>{
+    let loaded=0, failed=0;
+    const total=assets.length;
+    // Load one-by-one: avoids 24 simultaneous downloads and memory spikes on iPhone.
+    for(const item of assets){
+      try{
+        const gltf=await loader.loadAsync(new URL(item.file,document.baseURI).href);
         const model=gltf.scene;
         model.updateMatrixWorld(true);
         let bounds=new THREE.Box3().setFromObject(model);
         const dims=new THREE.Vector3(); bounds.getSize(dims);
         const maxDim=Math.max(dims.x,dims.y,dims.z);
-        if(!Number.isFinite(maxDim)||maxDim<.001){resolve(false);return}
+        if(!Number.isFinite(maxDim)||maxDim<.001) throw new Error('Boş model: '+item.file);
         const targetScale=item.size/maxDim;
         model.scale.setScalar(targetScale);
         model.updateMatrixWorld(true);
         bounds=new THREE.Box3().setFromObject(model);
         const center=new THREE.Vector3();bounds.getCenter(center);
-        model.position.set(item.x-center.x*targetScale,-bounds.min.y,item.z-center.z*targetScale);
+        model.position.set(item.x-center.x,-bounds.min.y,item.z-center.z);
         model.traverse(o=>{
           if(o.isMesh){
             o.castShadow=false;o.receiveShadow=false;
-            if(o.material){o.material.side=THREE.FrontSide}
+            if(o.material){
+              const mats=Array.isArray(o.material)?o.material:[o.material];
+              mats.forEach(m=>{m.side=THREE.DoubleSide;});
+            }
           }
         });
         scene.add(model);
-        loaded++;resolve(true);
-      },undefined,err=>{console.warn('Model yüklenemedi:',item.file,err);resolve(false)});
-    }));
-    const results=await Promise.all(jobs);
-    const success=results.filter(Boolean).length;
-    if(success) toast(`${success} gerçek 3D Mısır modeli yüklendi. Şahin için Q / ŞAHİN.`);
-    else toast('3D modeller yüklenemedi; temel dünya açık.');
+        loaded++;
+      }catch(err){
+        failed++;
+        console.error('3D model yüklenemedi:',item.file,err);
+      }
+      const pct=Math.round((loaded+failed)/total*100);
+      loadFill.style.width=pct+'%';
+      loadText.textContent=`Mısır dünyası yükleniyor… ${loaded}/${total} model`;
+      $('mission').textContent=`Gerçek 3D yapılar yükleniyor: ${loaded}/${total}`;
+    }
+    $('mission').textContent='Altı kutsal eseri bul ve Karnak Tapınağı’na ulaş.';
+    if(loaded) toast(`${loaded} gerçek 3D yapı sahneye yerleştirildi${failed?` · ${failed} model yüklenemedi`:''}.`);
+    else toast('3D modeller sunucudan yüklenemedi. Bağlantı hatasını kontrol et.');
+    return loaded;
     return success;
   }
 
@@ -522,8 +581,8 @@ function startGame(THREE){
     $('scout').addEventListener('click',()=>{
       scouting=!scouting;
       scoutBird.visible=scouting;
-      if(scouting){scoutUntil=clock.elapsedTime+9;toast('Şahin havalandı: çevreyi yukarıdan keşfet.');}
-      else toast('Şahin keşfinden dönüldü.');
+      if(scouting){scoutUntil=clock.elapsedTime+18;toast('Kartal havalandı: çevreyi yukarıdan keşfet.');}
+      else toast('Kartal keşfinden dönüldü.');
     });
     renderer.domElement.addEventListener('pointerdown',e=>{
       if(e.clientX>innerWidth*.38) lookPointer={x:e.clientX,y:e.clientY};
@@ -539,7 +598,7 @@ function startGame(THREE){
     addEventListener('keydown',e=>{
       if(e.key==='Shift')running=true;
       if(e.key==='e'||e.key==='E')interact();
-      if(e.key==='q'||e.key==='Q'){scouting=!scouting;scoutBird.visible=scouting;scoutUntil=clock.elapsedTime+9;}
+      if(e.key==='q'||e.key==='Q'){scouting=!scouting;scoutBird.visible=scouting;scoutUntil=clock.elapsedTime+18;}
       if(e.key===' '&&grounded){jumpVelocity=7.4;grounded=false}
     });
     addEventListener('keyup',e=>{if(e.key==='Shift')running=false});
@@ -579,8 +638,10 @@ function startGame(THREE){
     player.position.z=THREE.MathUtils.clamp(player.position.z,-360,100);
     if(scouting){
       const orbit=clock.elapsedTime;
-      scoutBird.position.set(player.position.x+Math.sin(orbit*1.5)*2.2,player.position.y+3.2+Math.sin(orbit*4)*.18,player.position.z-2.4);
-      scoutBird.rotation.y=Math.sin(orbit*1.5)*.35;
+      scoutBird.position.set(player.position.x+Math.sin(orbit*.72)*10,player.position.y+8+Math.sin(orbit*2.4)*1.25,player.position.z-7+Math.cos(orbit*.72)*8);
+      scoutBird.rotation.y=Math.atan2(Math.cos(orbit*.72),-Math.sin(orbit*.72));
+      scoutBird.rotation.z=Math.sin(orbit*1.44)*.12;
+      scoutBird.userData.wings?.forEach((w)=>{w.rotation.z=w.userData.side*(.18+Math.sin(orbit*10)*.62);});
       if(orbit>scoutUntil){scouting=false;scoutBird.visible=false;}
     }
     const desired=new THREE.Vector3(
@@ -589,7 +650,7 @@ function startGame(THREE){
       player.position.z+Math.cos(yaw)*8.7
     );
     const cameraTarget=scouting
-      ? new THREE.Vector3(player.position.x,player.position.y+28,player.position.z+10)
+      ? new THREE.Vector3(player.position.x,player.position.y+34,player.position.z+15)
       : desired;
     camera.position.lerp(cameraTarget,1-Math.pow(.001,dt));
     camera.lookAt(player.position.x,scouting?0:1.4+player.position.y,player.position.z);
@@ -607,7 +668,7 @@ function startGame(THREE){
     clock=new THREE.Clock();
     createWorld();
     resize(); controls(); animate();
-    loadDetailedModels().catch(err=>{console.warn(err);toast('Ek modeller yüklenemedi; temel oyun çalışıyor.')});
+    loadDetailedModels().catch(err=>{console.error(err);toast('Ek modeller yüklenemedi; temel oyun çalışıyor.')});
     addEventListener('resize',resize);
     addEventListener('orientationchange',()=>setTimeout(resize,220));
     if(window.visualViewport) visualViewport.addEventListener('resize',resize);
