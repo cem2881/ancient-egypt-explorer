@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#19150f">
-<title>MEDJAY 3.3 — Çarpışma ve Mimari Yenileme</title>
+<title>MEDJAY 4.1 — Nil Vadisi ve Antik Şehir</title>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 <style>
 :root{--gold:#edcc83;--glass:rgba(16,19,20,.82);--edge:rgba(237,204,131,.48)}
@@ -49,7 +49,7 @@ button:active,button.active{filter:brightness(1.4);transform:scale(.96)}
 <div id="game"></div>
 <div id="rotate">MEDJAY'i oynamak için telefonu yatay çevir.</div>
 <div id="hud">
-  <div class="brand">MEDJAY<small>ANTİK MISIR KEŞFİ · 3.3</small></div>
+  <div class="brand">MEDJAY<small>ANTİK MISIR KEŞFİ · 4.1</small></div>
   <div class="panel"><b id="missionLabel">ANA GÖREV</b><span id="mission">Altı kutsal eseri bul ve Karnak Tapınağı'na ulaş.</span></div>
   <div id="counter">KUTSAL ESERLER &nbsp;<strong><span id="found">0</span> / 6</strong></div>
   <div id="toast"></div>
@@ -100,7 +100,10 @@ function startGame(THREE){
     roof:mat(0x8e6948), skin:mat(0x986847), linen:mat(0xd9c69d),
     linenShade:mat(0xa88f68), leather:mat(0x483020), gold:mat(0xd4a84f,.35,.62),
     blue:mat(0x244d62), green:mat(0x526a3d), black:mat(0x29221b),
-    water:new THREE.MeshStandardMaterial({color:0x3b9da9,roughness:.2,metalness:.12})
+    water:new THREE.MeshStandardMaterial({color:0x277f89,roughness:.22,metalness:.08}),
+    limestone:mat(0xd5bd91), sunBrick:mat(0xb98758), plaster:mat(0xd8c19a),
+    shadeRed:mat(0x8d4e36), shadeBlue:mat(0x456b70), reed:mat(0x6e7440),
+    riverBank:mat(0x9d875e), darkDoor:mat(0x38271e)
   };
   const toast = msg => {
     const el=$('toast'); el.textContent=msg; el.classList.add('show');
@@ -313,12 +316,188 @@ function startGame(THREE){
     if(!blockedAt(player.position.x,z)) player.position.z=z;
   }
 
+
+  function registerBoxCollider(x,z,w,d,h=8){
+    structureColliders.push(new THREE.Box3(
+      new THREE.Vector3(x-w/2,0,z-d/2),
+      new THREE.Vector3(x+w/2,h,z+d/2)
+    ));
+  }
+
+  function makeTownHouse(x,z,w=10,d=8,h=5,variant=0){
+    const g=new THREE.Group(); scene.add(g); g.position.set(x,0,z);
+    const wall=[M.mud,M.plaster,M.limestone][variant%3];
+    // Sun-baked adobe mass, stepped parapet and stone foundation.
+    box(w,h,d,wall,0,h/2,0,g);
+    box(w+.55,.38,d+.55,M.darkStone,0,.19,0,g);
+    box(w+.35,.42,d+.35,M.sunBrick,0,h+.18,0,g);
+    for(let i=0;i<4;i++){
+      box(1.25,.8,.55,wall,-w/2+1.4+i*((w-2.8)/3),h+.72,-d/2+.12,g);
+    }
+    // Deep doorway with lintel and inset dark wood.
+    box(1.55,2.9,.18,M.darkDoor,0,1.45,d/2+.1,g);
+    box(2.05,.34,.42,M.edgeStone,0,3.05,d/2+.12,g);
+    box(2.15,.2,.48,M.gold,0,3.27,d/2+.13,g);
+    // Small recessed windows and timber lintels.
+    for(const side of [-1,1]){
+      box(1.05,1.15,.16,M.darkDoor,side*w*.31,2.65,d/2+.12,g);
+      box(1.45,.16,.28,M.edgeStone,side*w*.31,3.28,d/2+.15,g);
+      box(.12,1.25,.2,M.sunBrick,side*w*.31,2.65,d/2+.2,g);
+    }
+    // Roof shade pergola and woven mat canopy.
+    for(const xx of [-w*.38,w*.38]){
+      cyl(.09,.11,2.6,M.leather,xx,h+1.1,-d*.18,g,8);
+    }
+    const canopy=box(w*.92,.16,d*.58,variant%2?M.shadeBlue:M.shadeRed,0,h+2.35,-d*.18,g);
+    canopy.rotation.z=.025;
+    // Clay jars and baskets outside the entrance.
+    for(const side of [-1,1]){
+      const jarGroup=new THREE.Group();jarGroup.position.set(side*(w*.32),0,d/2+1.05);g.add(jarGroup);
+      cyl(.22,.3,.48,side===1?M.sunBrick:M.edgeStone,0,.24,0,jarGroup,10);
+      sphere(.22,side===1?M.sunBrick:M.edgeStone,0,.48,0,jarGroup,10).scale.y=.7;
+    }
+    registerBoxCollider(x,z,w+.6,d+.6,h+2);
+    return g;
+  }
+
+  function makeSphinxStatue(x,z,scale=1,rot=0){
+    const g=new THREE.Group();scene.add(g);g.position.set(x,0,z);g.rotation.y=rot;g.scale.setScalar(scale);
+    box(3.8,.55,1.65,M.darkStone,0,.28,0,g);
+    const body=add(new THREE.CapsuleGeometry(.62,2.5,5,10),M.limestone,0,1.18,0,g);body.rotation.z=Math.PI/2;
+    box(.75,1.15,.78,M.limestone,1.15,1.95,0,g);
+    sphere(.48,M.limestone,1.2,2.55,0,g,12);
+    box(.92,.52,.9,M.blue,1.2,2.68,0,g);
+    box(.22,.7,.85,M.blue,.72,2.35,0,g);
+    box(.22,.7,.85,M.blue,1.68,2.35,0,g);
+    registerBoxCollider(x,z,4*scale,2*scale,3*scale);
+    return g;
+  }
+
+  function buildProcessionalAvenue(){
+    // Pale limestone road, worn paving strips and a monumental approach to the pylons.
+    const roadMat=mat(0xc9b38d,.98), inset=mat(0x9e8968,.95);
+    for(let i=0;i<28;i++){
+      const z=8-i*5.4;
+      const slab=box(13,.12,4.9,roadMat,0,-.035,z);
+      slab.position.x=Math.sin(i*.18)*.55;
+      for(const side of [-1,1]){
+        box(.16,.13,4.6,inset,side*6.2,.025,z);
+      }
+    }
+    // Sphinx-lined avenue with plinths, carved bands and weathered standards.
+    for(let i=0;i<8;i++){
+      const z=-8-i*15;
+      for(const side of [-1,1]){
+        const x=side*13;
+        makeSphinxStatue(x,z,.72,side===1?Math.PI:0);
+        const pillar=cyl(.42,.58,5.8,M.sandstone,x+side*4,2.9,z,scene,12);
+        cyl(.72,.62,.48,M.edgeStone,x+side*4,5.95,z,scene,12);
+        for(let k=0;k<4;k++)box(.9,.11,.9,M.gold,x+side*4,1.1+k*1.25,z);
+      }
+    }
+    // Monumental pylons framing the near entrance, with recessed relief panels.
+    for(const side of [-1,1]){
+      const x=side*17;
+      box(7,17,5,M.sunBrick,x,8.5,-54);
+      box(7.6,.8,5.6,M.edgeStone,x,17.1,-54);
+      box(5.4,11,.18,M.limestone,x,8.3,-51.42);
+      for(let k=0;k<6;k++){
+        box(4.6,.13,.1,M.gold,x,4.1+k*1.5,-51.28);
+      }
+      box(1.2,19,1.1,M.darkStone,x-side*4,9.5,-54);
+      const cap=add(new THREE.ConeGeometry(.9,1.8,4),M.gold,x-side*4,20,-54);cap.rotation.y=Math.PI/4;
+      registerBoxCollider(x,-54,7.5,5.8,19);
+    }
+  }
+
+  function buildRiverAndFarmland(){
+    // A broad Nile branch bends along the eastern edge of the playable valley.
+    const riverMat=new THREE.MeshStandardMaterial({color:0x287f8d,roughness:.2,metalness:.05});
+    const bankMat=mat(0x9c875e,.98), wetSand=mat(0xb7a078,.95);
+    for(let i=0;i<22;i++){
+      const z=100-i*20;
+      const x=105+Math.sin(i*.34)*13;
+      const water=add(new THREE.CircleGeometry(15+(i%3)*2,40),riverMat,x,-.02,z);
+      water.rotation.x=-Math.PI/2;water.scale.set(1.25,.72,1);
+      const bank=add(new THREE.TorusGeometry(15+(i%3)*2,.75,5,40),bankMat,x,.04,z);
+      bank.rotation.x=Math.PI/2;bank.scale.set(1.25,.72,1);
+      // reeds and papyrus on both banks
+      for(let r=0;r<7;r++){
+        const a=r/7*Math.PI*2;
+        const rx=x+Math.cos(a)*17, rz=z+Math.sin(a)*13;
+        cyl(.035,.055,1.7,M.reed,rx,.85,rz,scene,5);
+        for(let leaf=0;leaf<3;leaf++){
+          const frond=add(new THREE.ConeGeometry(.11,.95,5),M.green,rx+Math.cos(a+leaf)*.2,1.55,rz+Math.sin(a+leaf)*.2);
+          frond.rotation.z=.35*Math.cos(a+leaf);frond.rotation.x=.35*Math.sin(a+leaf);
+        }
+      }
+    }
+    // Irrigated plots, date palms and small mud-brick farm compounds.
+    for(let i=0;i<12;i++){
+      const x=68+(i%3)*18,z=72-Math.floor(i/3)*53;
+      const plot=box(13,.06,25,mat(0x8b8752),x,-.08,z);
+      for(let row=0;row<3;row++)for(let col=0;col<3;col++){
+        const px=x-4+col*4,pz=z-8+row*8;
+        cyl(.12,.18,1.2,M.reed,px,.6,pz,scene,6);
+        sphere(.22,M.green,px,.95,pz,scene,8).scale.set(1.7,.6,1);
+      }
+    }
+    for(let i=0;i<26;i++){
+      const z=80-i*15;
+      const x=72+Math.sin(i*.55)*27;
+      palm(x,z);
+    }
+    // Reed boats and a simple timber landing along the bank.
+    for(let i=0;i<3;i++){
+      const x=100+(i-1)*12,z=44-i*72;
+      const dock=box(8,.45,3,M.darkStone,x,.18,z);
+      for(let k=0;k<4;k++)box(.12,.75,.12,M.leather,x-3+k*2,.55,z+1.2);
+      const hull=add(new THREE.ConeGeometry(2.1,9,5),M.darkStone,x,.45,z);hull.rotation.z=Math.PI/2;
+      box(3,.12,2,M.linen,x,.9,z);
+      for(const side of [-1,1])cyl(.06,.06,3,M.leather,x+side*1.5,2.1,z,scene,6);
+    }
+  }
+
+  function buildMarketQuarter(){
+    // Compact, lived-in streets flank the processional road; keep the center lane open.
+    const placements=[
+      [-24,7,10,8,5,0],[-40,-8,12,9,5.8,1],[-25,-28,9,8,4.8,2],
+      [-48,-39,13,10,6,0],[-29,-62,11,9,5.2,1],
+      [25,8,10,8,5,1],[42,-10,12,9,5.8,2],[27,-31,9,8,4.8,0],
+      [49,-43,13,10,6,1],[29,-65,11,9,5.2,2]
+    ];
+    placements.forEach(v=>makeTownHouse(...v));
+    // Cloth-covered merchant stalls, woven rugs, amphorae and stacked produce.
+    for(let i=0;i<7;i++){
+      const side=i%2?1:-1,x=side*(17+(i%3)*7),z=17-Math.floor(i/2)*17;
+      const w=5.5;
+      box(w,.22,4.4,M.darkStone,x,.12,z);
+      for(const dx of [-2.3,2.3])for(const dz of [-1.7,1.7])cyl(.07,.09,3.1,M.leather,x+dx,1.55,z+dz,scene,7);
+      const awning=box(6,.15,4.8,i%2?M.shadeBlue:M.shadeRed,x,3.15,z);
+      awning.rotation.z=.08;
+      for(let p=0;p<4;p++){
+        const basket=cyl(.28,.36,.45,p%2?M.sunBrick:M.edgeStone,x-1.8+p*1.2,.55,z+.2,scene,8);
+        sphere(.16,M.green,x-1.8+p*1.2,.86,z+.2,scene,8);
+      }
+      registerBoxCollider(x,z,5.5,4.5,3.4);
+    }
+    // Boundary walls, gate niches and sun-baked crenellations.
+    for(const side of [-1,1]){
+      for(let i=0;i<7;i++){
+        const z=25-i*17,x=side*57;
+        box(1.2,3.8,16,M.sunBrick,x,1.9,z);
+        for(let k=0;k<4;k++)box(1.5,.7,1.4,M.limestone,x,4.1,z-6+k*4);
+        registerBoxCollider(x,z,1.6,16.4,4.5);
+      }
+    }
+  }
+
   function createWorld(){
     scene=new THREE.Scene();
     scene.background=new THREE.Color(0x9fc6d4);
-    scene.fog=new THREE.Fog(0xd8bd8d,115,360);
-    scene.add(new THREE.HemisphereLight(0xffe9ce,0x725333,2.05));
-    const sun=new THREE.DirectionalLight(0xffdfad,2.7);
+    scene.fog=new THREE.Fog(0xd8bd8d,145,520);
+    scene.add(new THREE.HemisphereLight(0xffe9ce,0x725333,1.65));
+    const sun=new THREE.DirectionalLight(0xffdfad,3.15);
     sun.position.set(-65,95,35); sun.castShadow=true;
     sun.shadow.mapSize.set(1536,1536);
     sun.shadow.camera.left=-115; sun.shadow.camera.right=115;
@@ -327,6 +506,11 @@ function startGame(THREE){
     const floor=add(new THREE.PlaneGeometry(800,800),M.sand,0,-.18,-115);
     floor.rotation.x=-Math.PI/2; floor.receiveShadow=true;
 
+    // New 4.0 world pass: a dense Nile-side settlement and a monumental avenue.
+    buildRiverAndFarmland();
+    buildMarketQuarter();
+    buildProcessionalAvenue();
+
     for(let i=0;i<50;i++){
       const d=sphere(1, [M.sand,M.paleSand,M.sandstone][i%3],
         (Math.random()-.5)*420,-2.6,-30-Math.random()*360,scene,12);
@@ -334,8 +518,8 @@ function startGame(THREE){
     }
     // Sculpted dune ridges frame the playable valley without blocking the main routes.
     [
-      [-150,-35,48,34,12,1],[-118,-92,38,25,9,2],[-178,-165,54,38,16,3],
-      [155,-42,52,32,13,4],[174,-118,46,31,12,5],[145,-205,62,42,18,6],
+      [-112,-42,42,30,18,1],[-132,-102,45,29,17,2],[-178,-165,58,42,24,3],
+      [125,-42,48,32,18,4],[174,-118,52,35,21,5],[145,-205,68,48,27,6],
       [-205,-265,58,44,19,7],[205,-310,70,48,21,8],[-92,85,42,27,10,9],
       [100,95,48,30,11,10],[-235,-65,52,34,14,11],[235,-150,58,40,17,12]
     ].forEach(v=>makeDune(...v));
@@ -437,18 +621,18 @@ function startGame(THREE){
     const assets=[
       // The first landmark cluster is deliberately close to the spawn point,
       // so the new models are immediately visible instead of being kilometres away.
-      {file:'desert-city-gate.glb',x:0,z:-34,size:28},
-      {file:'great-sandstone-sphinx.glb',x:-23,z:-57,size:21},
-      {file:'desert-step-pyramid.glb',x:43,z:-103,size:43},
-      {file:'desert-temple-hall.glb',x:5,z:-160,size:39},
-      {file:'pharaoh-colossi-gate.glb',x:34,z:-137,size:26},
-      {file:'desert-camel-caravan.glb',x:-23,z:29,size:18},
-      {file:'desert-bazaar-stall.glb',x:18,z:24,size:14},
-      {file:'desert-oasis-camp.glb',x:59,z:28,size:23},
-      {file:'desert-tomb-entrance.glb',x:88,z:-72,size:21},
+      {file:'desert-city-gate.glb',x:0,z:-62,size:38},
+      {file:'great-sandstone-sphinx.glb',x:-34,z:-94,size:25},
+      {file:'desert-step-pyramid.glb',x:76,z:-170,size:52},
+      {file:'desert-temple-hall.glb',x:4,z:-218,size:48},
+      {file:'pharaoh-colossi-gate.glb',x:39,z:-194,size:34},
+      {file:'desert-camel-caravan.glb',x:-45,z:32,size:22},
+      {file:'desert-bazaar-stall.glb',x:23,z:34,size:17},
+      {file:'desert-oasis-camp.glb',x:60,z:53,size:27},
+      {file:'desert-tomb-entrance.glb',x:145,z:-95,size:26},
       {file:'desert-obelisk-set.glb',x:-58,z:-112,size:18},
       {file:'sandstone-ruin-kit.glb',x:-88,z:-62,size:19},
-      {file:'desert-tent-camp.glb',x:-103,z:63,size:24},
+      {file:'desert-tent-camp.glb',x:-92,z:70,size:28},
       {file:'desert-dig-site.glb',x:125,z:-39,size:23},
       {file:'desert-tomb-terrain-kit.glb',x:148,z:-112,size:35},
       {file:'tomb-trap-corridor.glb',x:157,z:-120,size:17},
@@ -460,7 +644,7 @@ function startGame(THREE){
       {file:'desert-well.glb',x:-75,z:61,size:13},
       {file:'buried-reed-boat.glb',x:45,z:-16,size:15},
       {file:'desert-animals-set.glb',x:92,z:50,size:18},
-      {file:'mud-brick-desert-house.glb',x:-84,z:28,size:15}
+      {file:'mud-brick-desert-house.glb',x:-35,z:-18,size:18}
     ];
     let loaded=0, failed=0;
     const total=assets.length;
@@ -513,7 +697,6 @@ function startGame(THREE){
     if(loaded) toast(`${loaded} gerçek 3D yapı sahneye yerleştirildi${failed?` · ${failed} model yüklenemedi`:''}.`);
     else toast('3D modeller sunucudan yüklenemedi. Bağlantı hatasını kontrol et.');
     return loaded;
-    return success;
   }
 
   function resize(){
