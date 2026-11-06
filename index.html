@@ -234,8 +234,27 @@ active=false;joyX=0;joyY=0;stick.style.transform='translate(0,0)';
 }
 pad.addEventListener('pointerup',stop);
 pad.addEventListener('pointercancel',stop);
-document.getElementById('turn').addEventListener('pointerdown',()=>{
-angle+=.65;
+const lookArea=document.getElementById('lookArea');
+let lastTouchX=null;
+
+lookArea.addEventListener('pointerdown',e=>{
+  lastTouchX=e.clientX;
+  lookArea.setPointerCapture(e.pointerId);
+});
+
+lookArea.addEventListener('pointermove',e=>{
+  if(lastTouchX===null)return;
+  const dx=e.clientX-lastTouchX;
+  angle-=dx*0.008;
+  lastTouchX=e.clientX;
+});
+
+lookArea.addEventListener('pointerup',()=>{
+  lastTouchX=null;
+});
+
+lookArea.addEventListener('pointercancel',()=>{
+  lastTouchX=null;
 });
 
 const clock=new THREE.Clock();
