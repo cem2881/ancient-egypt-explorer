@@ -3,52 +3,155 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#18252d">
+<meta name="theme-color" content="#171c20">
 <title>MEDJAY — Antik Mısır Keşfi</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#c99c62;font-family:system-ui,-apple-system,Segoe UI,sans-serif;touch-action:none}canvas{display:block}#game{position:fixed;inset:0}#loading{position:fixed;inset:0;z-index:30;display:grid;place-items:center;background:linear-gradient(#18252d,#8e6540);color:#fff;text-align:center;padding:24px;transition:opacity .5s}#loading .card{max-width:360px;background:#111a20e8;border:1px solid #d5b36b66;border-radius:18px;padding:25px}#loading h1{font-size:28px;margin:0;color:#e9c477;letter-spacing:3px}#loading p{font-size:13px;line-height:1.5;opacity:.9}#bar{height:5px;background:#ffffff30;border-radius:8px;overflow:hidden}#bar i{display:block;height:100%;width:0;background:#e9c477;transition:width .2s}#hud{position:fixed;inset:0;pointer-events:none;color:white;text-shadow:0 2px 5px #352312}#brand{position:absolute;left:16px;top:12px;font-weight:900;letter-spacing:1px;font-size:clamp(15px,2.5vw,23px)}#brand small{display:block;font-size:9px;letter-spacing:2px;color:#f1d28f}#objective{position:absolute;right:13px;top:12px;background:#171a1bd9;border:1px solid #e7c47b66;border-radius:11px;padding:9px 12px;max-width:220px;font-size:11px}#objective b{display:block;color:#f1cf88;font-size:10px;margin-bottom:3px}#counter{position:absolute;left:17px;top:64px;font-size:12px}#toast{position:absolute;left:50%;top:23%;transform:translate(-50%,-10px);opacity:0;background:#171a1ddd;border:1px solid #e7c47b88;border-radius:12px;padding:10px 15px;font-size:12px;transition:.2s;white-space:nowrap}#toast.show{opacity:1;transform:translate(-50%,0)}#stick{position:absolute;left:max(17px,env(safe-area-inset-left));bottom:max(18px,env(safe-area-inset-bottom));width:118px;height:118px;border-radius:50%;border:2px solid #ffffff88;background:#ffffff20;pointer-events:auto}#nub{position:absolute;width:46px;height:46px;left:34px;top:34px;border-radius:50%;background:#fff9;border:2px solid white}#actions{position:absolute;right:max(16px,env(safe-area-inset-right));bottom:max(22px,env(safe-area-inset-bottom));display:flex;gap:10px;align-items:end;pointer-events:auto}.action{width:61px;height:61px;border-radius:50%;border:1px solid #ffffff99;background:#211b17b8;color:#fff;font-weight:800;font-size:10px}.action:active{background:#9a672e}#hint{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:9px;opacity:.75;white-space:nowrap}#rotate{display:none;position:fixed;inset:0;background:#17130f;color:white;z-index:40;place-items:center;text-align:center;padding:30px}@media(orientation:portrait){#rotate{display:grid}}@media(orientation:landscape) and (max-height:500px){#stick{width:96px;height:96px}#nub{left:25px;top:25px;width:42px;height:42px}.action{width:54px;height:54px}#counter{top:53px}}
+:root{--gold:#e8c27a;--gold2:#ad8040;--ink:#101820;--glass:rgba(13,20,25,.76);--line:rgba(238,203,135,.38)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#c99c62;font-family:system-ui,-apple-system,Segoe UI,sans-serif;touch-action:none;overscroll-behavior:none}
+#game{position:fixed;inset:0;width:100%;height:100%;overflow:hidden}
+#game canvas{display:block;width:100%;height:100%;touch-action:none}
+#hud{position:fixed;inset:0;z-index:5;pointer-events:none;color:#fff;text-shadow:0 2px 8px #000b}
+.topbar{position:absolute;left:max(14px,env(safe-area-inset-left));right:max(14px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top));display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.brand{font-weight:950;letter-spacing:2.5px;font-size:clamp(16px,2.4vw,24px);line-height:1;color:#f3d28d}
+.brand small{display:block;margin-top:5px;font-size:8px;letter-spacing:3px;color:#fff9;font-weight:700}
+.mission{max-width:min(48vw,270px);padding:10px 13px;border:1px solid var(--line);border-radius:13px;background:var(--glass);backdrop-filter:blur(12px);font-size:11px;line-height:1.35}
+.mission b{display:block;color:var(--gold);font-size:9px;letter-spacing:1.6px;margin-bottom:4px}
+.relics{position:absolute;left:max(15px,env(safe-area-inset-left));top:75px;background:var(--glass);border:1px solid var(--line);border-radius:10px;padding:7px 11px;font-size:11px}
+.relics strong{color:var(--gold);font-variant-numeric:tabular-nums}
+#toast{position:absolute;left:50%;top:22%;transform:translate(-50%,-8px);opacity:0;transition:.22s;background:rgba(12,18,22,.9);border:1px solid var(--line);border-radius:12px;padding:10px 15px;font-size:12px;white-space:nowrap;max-width:85vw;text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+.controls{position:absolute;left:max(18px,env(safe-area-inset-left));right:max(18px,env(safe-area-inset-right));bottom:max(17px,env(safe-area-inset-bottom));display:flex;justify-content:space-between;align-items:flex-end}
+#stick{width:clamp(88px,17vw,126px);height:clamp(88px,17vw,126px);border-radius:50%;border:1px solid #fff8;background:radial-gradient(circle,rgba(255,255,255,.14),rgba(14,20,24,.42));box-shadow:inset 0 0 24px #0005,0 6px 22px #0004;pointer-events:auto;position:relative;touch-action:none}
+#nub{position:absolute;width:42%;height:42%;left:29%;top:29%;border-radius:50%;background:linear-gradient(145deg,#fff,#b9b7ad);border:2px solid #fff;box-shadow:0 4px 12px #0007}
+.actions{display:flex;gap:clamp(8px,2vw,14px);align-items:flex-end;pointer-events:auto}
+.action{width:clamp(53px,10vw,70px);height:clamp(53px,10vw,70px);border-radius:50%;border:1px solid #f3d28d99;background:linear-gradient(145deg,rgba(50,43,32,.94),rgba(13,19,23,.94));color:#f7e6c1;font-weight:850;font-size:clamp(9px,1.6vw,11px);letter-spacing:.5px;box-shadow:0 5px 18px #0006,inset 0 1px #ffffff26;touch-action:none}
+.action.primary{width:clamp(61px,11vw,78px);height:clamp(61px,11vw,78px);background:linear-gradient(145deg,#a77a3e,#594124);color:white}
+.action:active,.action.active{filter:brightness(1.35);transform:scale(.96)}
+#hint{position:absolute;bottom:calc(max(17px,env(safe-area-inset-bottom)) + 5px);left:50%;transform:translateX(-50%);font-size:9px;color:#fff9;white-space:nowrap;letter-spacing:.2px}
+#loading{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 42%,#67513b,#171f25 72%);color:white;text-align:center;padding:24px;transition:opacity .5s}
+.loadcard{width:min(340px,90vw);padding:26px 24px;border:1px solid var(--line);border-radius:18px;background:#101820dc;box-shadow:0 20px 60px #0008}
+.loadcard h1{margin:0;color:var(--gold);font-size:30px;letter-spacing:5px}
+.loadcard p{font-size:12px;color:#e7ddc9;margin:10px 0 17px}
+#bar{height:4px;background:#ffffff24;border-radius:9px;overflow:hidden}
+#progress{height:100%;width:0;background:linear-gradient(90deg,#9c713a,#f5d995);transition:width .2s}
+#rotate{display:none;position:fixed;inset:0;z-index:30;background:#111820;color:#fff;place-items:center;text-align:center;padding:30px}
+@media(orientation:portrait){#rotate{display:grid}}
+@media(orientation:landscape) and (max-height:430px){
+ .topbar{top:7px}.relics{top:59px}.mission{padding:7px 10px}
+ #stick{width:82px;height:82px}.action{width:49px;height:49px}.action.primary{width:56px;height:56px}
+ #hint{display:none}.controls{bottom:max(9px,env(safe-area-inset-bottom))}
+}
 </style>
-<!-- Import map MUST be in head and before the module script. -->
-<script type="importmap">
-{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}
-</script>
-<!-- If the module cannot start, do not leave the user on an endless loading screen. -->
-<script>window.__medjayBooted=false;setTimeout(function(){if(!window.__medjayBooted){var p=document.getElementById('loadtext');if(p)p.textContent='Oyun motoru yüklenemedi. İnternet bağlantısını kontrol edip sayfayı yenile.'}},7000);</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 </head>
 <body>
 <div id="game"></div>
-<div id="loading"><div class="card"><h1>MEDJAY</h1><b>ANTİK MISIR KEŞFİ</b><p id="loadtext">Çöl dünyası hazırlanıyor…</p><div id="bar"><i id="progress"></i></div></div></div>
-<div id="rotate">Oyunu oynamak için telefonu yatay çevir.</div>
-<div id="hud"><div id="brand">MEDJAY<small>ANTİK MISIR KEŞFİ</small></div><div id="objective"><b>ANA GÖREV</b>Kayıp kutsal eserleri bul ve tapınağa ulaş.</div><div id="counter">Eserler: <span id="found">0</span> / 6</div><div id="toast"></div><div id="stick"><div id="nub"></div></div><div id="actions"><button class="action" id="run">KOŞ</button><button class="action" id="interact">İNCELE</button></div><div id="hint">Sol joystick: hareket · Sağ tarafı sürükle: kamerayı çevir</div></div>
+<div id="loading"><div class="loadcard"><h1>MEDJAY</h1><p>Antik Mısır dünyası hazırlanıyor…</p><div id="bar"><div id="progress"></div></div></div></div>
+<div id="rotate">Daha geniş bir keşif alanı için telefonu yatay çevir.</div>
+<div id="hud">
+ <div class="topbar"><div class="brand">MEDJAY<small>ANTİK MISIR KEŞFİ</small></div><div class="mission"><b>ANA GÖREV</b>Kayıp kutsal eserleri topla ve tapınağa ulaş.</div></div>
+ <div class="relics">KUTSAL ESERLER&nbsp; <strong><span id="found">0</span> / 6</strong></div><div id="toast"></div>
+ <div class="controls"><div id="stick"><div id="nub"></div></div><div class="actions"><button class="action" id="run">KOŞ</button><button class="action primary" id="interact">İNCELE</button></div></div>
+ <div id="hint">SOL: HAREKET &nbsp; • &nbsp; SAĞ: KAMERAYI ÇEVİR</div>
+</div>
 <script type="module">
 import * as THREE from 'three';
-import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
-window.__medjayBooted=true;
-const $=id=>document.getElementById(id),root=$('game');
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bc4d5);scene.fog=new THREE.Fog(0xd9b77f,.003,260);
-const camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,.1,500);
-const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.35));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;root.appendChild(renderer.domElement);
-scene.add(new THREE.HemisphereLight(0xffe7c0,0x705037,2));const sun=new THREE.DirectionalLight(0xffdfaa,2.3);sun.position.set(-45,80,35);scene.add(sun);
-const mat=(c,r=.9)=>new THREE.MeshStandardMaterial({color:c,roughness:r});const sand=mat(0xd6ad70),dark=mat(0x51402f),water=new THREE.MeshStandardMaterial({color:0x3d9caa,roughness:.25});
-const ground=new THREE.Mesh(new THREE.PlaneGeometry(500,500),sand);ground.rotation.x=-Math.PI/2;scene.add(ground);
-for(let i=0;i<24;i++){const d=new THREE.Mesh(new THREE.SphereGeometry(1,12,8),mat(i%2?0xc99d60:0xe0bd83));d.scale.set(18+Math.random()*25,2+Math.random()*4,8+Math.random()*15);d.position.set((Math.random()-.5)*300,-1.5,-70-Math.random()*220);scene.add(d)}
-const pool=new THREE.Mesh(new THREE.CircleGeometry(13,40),water);pool.rotation.x=-Math.PI/2;pool.position.set(24,.04,-28);scene.add(pool);
-function palm(x,z){const g=new THREE.Group(),trunk=new THREE.Mesh(new THREE.CylinderGeometry(.35,.55,7,7),mat(0x77502e));trunk.position.y=3.5;g.add(trunk);for(let j=0;j<8;j++){const leaf=new THREE.Mesh(new THREE.ConeGeometry(.65,7,5),mat(0x46643a));leaf.position.set(Math.cos(j*Math.PI/4)*2,7,Math.sin(j*Math.PI/4)*2);leaf.rotation.z=-Math.PI/2.6;leaf.rotation.y=j*Math.PI/4;g.add(leaf)}g.position.set(x,0,z);scene.add(g)}
-for(let i=0;i<12;i++){const a=i*Math.PI/6;palm(24+Math.cos(a)*17,-28+Math.sin(a)*17)}
-function house(x,z){const g=new THREE.Group(),b=new THREE.Mesh(new THREE.BoxGeometry(9,5,8),mat(0xb78b5c)),roof=new THREE.Mesh(new THREE.BoxGeometry(9.8,.7,8.8),mat(0x8a6344)),door=new THREE.Mesh(new THREE.BoxGeometry(1.5,2.7,.15),dark);b.position.y=2.5;roof.position.y=5.2;door.position.set(0,1.35,4.08);g.add(b,roof,door);g.position.set(x,0,z);scene.add(g)}
-for(let i=0;i<9;i++)house(-35+(i%3)*12,-25-Math.floor(i/3)*12);
-const player=new THREE.Group(),body=new THREE.Mesh(new THREE.CapsuleGeometry(.48,1.05,4,8),mat(0x8b3e25)),head=new THREE.Mesh(new THREE.SphereGeometry(.34,12,10),mat(0x9b6847)),cloth=new THREE.Mesh(new THREE.BoxGeometry(1.05,.22,.65),mat(0xd7c08e));body.position.y=1.05;head.position.y=1.95;cloth.position.set(0,1.5,0);player.add(body,head,cloth);player.position.set(0,0,8);scene.add(player);
-for(let i=0;i<5;i++){const n=new THREE.Group(),robe=new THREE.Mesh(new THREE.CapsuleGeometry(.42,.9,3,7),mat([0x6e4b36,0x8c7650,0x4d5542][i%3])),h=new THREE.Mesh(new THREE.SphereGeometry(.3,10,8),mat(0x986b4a));robe.position.y=.95;h.position.y=1.8;n.add(robe,h);n.position.set(-20+i*10,0,-18-(i%2)*8);scene.add(n)}
-const loader=new GLTFLoader();let loaded=0;const assets=[['desert-step-pyramid.glb',-65,-95,1.7],['great-sandstone-sphinx.glb',-42,-83,1.5],['desert-temple-hall.glb',5,-115,1.5],['pharaoh-colossi-gate.glb',5,-92,1.2],['desert-tomb-entrance.glb',68,-72,1.4],['desert-city-gate.glb',-18,-48,1.1],['mud-brick-desert-house.glb',-42,-12,1.2],['desert-bazaar-stall.glb',-22,-12,1.1],['desert-oasis-camp.glb',38,-35,1.1],['desert-throne-room.glb',78,-118,1.2],['desert-animals-set.glb',44,-15,1],['desert-tomb-terrain-kit.glb',92,-80,1.2],['desert-obelisk-set.glb',-5,-72,1.1],['sandstone-ruin-kit.glb',-85,-40,1.2],['desert-relics-set.glb',20,-65,1],['desert-camel-caravan.glb',-52,18,1],['desert-carved-tablets.glb',-75,-65,1],['desert-tent-camp.glb',56,12,1],['royal-desert-sarcophagus.glb',80,-90,1],['desert-well.glb',-6,18,1],['desert-dig-site.glb',100,-25,1],['buried-reed-boat.glb',-105,-35,1],['desert-treasure-vault.glb',110,-115,1],['tomb-trap-corridor.glb',94,-105,1]];
-function progress(){ $('progress').style.width=Math.round(loaded/assets.length*100)+'%';$('loadtext').textContent=`Antik yapılar yükleniyor… ${loaded}/${assets.length}`} 
-for(const [file,x,z,s] of assets){loader.load('./'+file,g=>{const m=g.scene;m.scale.setScalar(s);m.position.set(x,0,z);m.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});scene.add(m);loaded++;progress()},undefined,()=>{loaded++;progress()})}
-const relics=[];for(let i=0;i<6;i++){const g=new THREE.Group(),base=new THREE.Mesh(new THREE.CylinderGeometry(.65,.8,.22,8),mat(0x6c4a2d)),gem=new THREE.Mesh(new THREE.OctahedronGeometry(.55),new THREE.MeshStandardMaterial({color:0xe8bd55,metalness:.65,roughness:.25,emissive:0x6b3900}));base.position.y=.12;gem.position.y=1;g.add(base,gem);g.position.set([-62,-38,10,54,83,112][i],0,[-65,-8,-55,-88,-42,-105][i]);scene.add(g);relics.push({g,found:false})}
-let found=0;const toast=t=>{$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2200)};
-let joy={x:0,y:0},running=false,yaw=0,drag=null;const stick=$('stick'),nub=$('nub');stick.addEventListener('pointerdown',e=>{stick.setPointerCapture(e.pointerId);moveJoy(e)});stick.addEventListener('pointermove',e=>{if(e.buttons)moveJoy(e)});function moveJoy(e){const r=stick.getBoundingClientRect();let dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),len=Math.hypot(dx,dy),max=39;if(len>max){dx*=max/len;dy*=max/len}joy.x=dx/max;joy.y=dy/max;nub.style.transform=`translate(${dx}px,${dy}px)`}function resetJoy(){joy={x:0,y:0};nub.style.transform='translate(0,0)'}stick.addEventListener('pointerup',resetJoy);stick.addEventListener('pointercancel',resetJoy);$('run').addEventListener('pointerdown',()=>running=true);$('run').addEventListener('pointerup',()=>running=false);$('run').addEventListener('pointerleave',()=>running=false);
-renderer.domElement.addEventListener('pointerdown',e=>{if(e.clientX>innerWidth*.42)drag={x:e.clientX,y:e.clientY}});renderer.domElement.addEventListener('pointermove',e=>{if(drag){yaw-=(e.clientX-drag.x)*.006;drag={x:e.clientX,y:e.clientY}}});renderer.domElement.addEventListener('pointerup',()=>drag=null);renderer.domElement.addEventListener('pointercancel',()=>drag=null);
-$('interact').onclick=()=>{let near=null,dist=999;for(const r of relics){const d=player.position.distanceTo(r.g.position);if(!r.found&&d<dist){dist=d;near=r}}if(near&&dist<5){near.found=true;near.g.visible=false;found++;$('found').textContent=found;toast(found===6?'Bütün eserler bulundu! Tapınağa dön.':`Kutsal eser bulundu (${found}/6)`)}else toast('Yakında incelenecek bir eser yok.')};
-const camTarget=new THREE.Vector3(),clock=new THREE.Clock();function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.04);for(const r of relics)if(!r.found)r.g.rotation.y+=dt*.8;const speed=running?12:6,forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw)),right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw)),move=forward.clone().multiplyScalar(-joy.y).add(right.multiplyScalar(joy.x));if(move.lengthSq()>.01){move.normalize();player.position.addScaledVector(move,speed*dt);player.rotation.y=Math.atan2(move.x,move.z)}const desired=new THREE.Vector3(player.position.x+Math.sin(yaw)*8,player.position.y+5.2,player.position.z+Math.cos(yaw)*8);camera.position.lerp(desired,.12);camTarget.set(player.position.x,1.3,player.position.z);camera.lookAt(camTarget);renderer.render(scene,camera)}
-let ready=false;function reveal(){if(ready)return;ready=true;$('loading').style.opacity=0;setTimeout(()=>$('loading').remove(),550);toast('Keşif başladı. Eserleri bul!')}setTimeout(reveal,5000);const check=setInterval(()=>{if(loaded===assets.length){clearInterval(check);reveal()}},200);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});animate();
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const $=id=>document.getElementById(id);
+const game=$('game');
+let renderer,scene,camera,player,clock,ready=false;
+let yaw=0,pitch=.22,joy={x:0,y:0},running=false,drag=null,found=0;
+const relics=[];
+const toast=(s)=>{const t=$('toast');t.textContent=s;t.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove('show'),2100)};
+function resize(){
+ if(!renderer||!camera)return;
+ const w=Math.max(1,game.clientWidth||window.innerWidth),h=Math.max(1,game.clientHeight||window.innerHeight);
+ renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.6));
+ renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();
+}
+function material(color,roughness=.88,metalness=0){return new THREE.MeshStandardMaterial({color,roughness,metalness})}
+function box(parent,w,h,d,mat,x,y,z){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
+function makePerson(){
+ const g=new THREE.Group();
+ const skin=material(0x986847),linen=material(0xc7b48b),linen2=material(0x8e7958),leather=material(0x4a3021),gold=material(0xc69a4c,.35,.55),dark=material(0x30241d);
+ // legs and sandals
+ const legs=[];
+ for(const x of [-.19,.19]){const leg=new THREE.Group();leg.position.set(x,.82,0);const mesh=new THREE.Mesh(new THREE.CylinderGeometry(.105,.13,.78,10),skin);mesh.position.y=-.28;mesh.castShadow=true;leg.add(mesh);const sandal=box(leg,.25,.09,.42,leather,0,-.68,.08);legs.push(leg);g.add(leg)}
+ // kilt
+ const skirt=new THREE.Mesh(new THREE.CylinderGeometry(.38,.48,.72,12,1),linen);skirt.position.y=1.02;skirt.castShadow=true;g.add(skirt);
+ // torso, crossed sash
+ const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.29,.62,5,12),linen2);torso.position.y=1.72;torso.castShadow=true;g.add(torso);
+ const sash=box(g,.14,.95,.08,linen,0,1.7,.27);sash.rotation.z=-.42;
+ const belt=box(g,.73,.12,.47,leather,0,1.27,0);box(g,.17,.16,.06,gold,0,1.27,.26);
+ // arms, shoulder wraps
+ const arms=[];
+ for(const side of [-1,1]){const a=new THREE.Group();a.position.set(side*.36,1.95,0);const upper=new THREE.Mesh(new THREE.CapsuleGeometry(.105,.47,4,8),skin);upper.rotation.z=side*.18;upper.position.y=-.28;upper.castShadow=true;a.add(upper);const bracer=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,.18,10),gold);bracer.position.y=-.53;a.add(bracer);arms.push(a);g.add(a)}
+ // head, neck, hair and Nemes-style striped headcloth
+ const neck=new THREE.Mesh(new THREE.CylinderGeometry(.11,.13,.2,10),skin);neck.position.y=2.22;g.add(neck);
+ const head=new THREE.Mesh(new THREE.SphereGeometry(.24,16,14),skin);head.position.y=2.48;head.castShadow=true;g.add(head);
+ const hair=new THREE.Mesh(new THREE.SphereGeometry(.245,14,10,0,Math.PI*2,0,Math.PI*.56),dark);hair.position.y=2.52;g.add(hair);
+ const cap=new THREE.Mesh(new THREE.SphereGeometry(.265,16,12,0,Math.PI*2,0,Math.PI*.52),material(0x24465a));cap.position.y=2.55;g.add(cap);
+ for(const side of [-1,1]){const flap=box(g,.16,.62,.16,material(0x24465a),side*.25,2.12,.02);flap.rotation.z=side*.12;for(let k=0;k<3;k++)box(g,.17,.025,.17,gold,side*.25,2.31-k*.13,.11)}
+ // face details
+ const eyeMat=material(0x201a16);for(const x of [-.09,.09]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.025,8,8),eyeMat);eye.position.set(x,2.5,.218);g.add(eye)}
+ const beard=new THREE.Mesh(new THREE.ConeGeometry(.055,.2,7),dark);beard.position.set(0,2.22,.2);beard.rotation.x=-.2;g.add(beard);
+ g.userData={legs,arms};return g;
+}
+function makeWorld(){
+ scene=new THREE.Scene();scene.background=new THREE.Color(0x9dc6d5);scene.fog=new THREE.Fog(0xd8b77f,95,290);
+ const hemi=new THREE.HemisphereLight(0xffe8c8,0x6d4d32,2.0);scene.add(hemi);
+ const sun=new THREE.DirectionalLight(0xffdfad,3.1);sun.position.set(-55,90,35);sun.castShadow=true;sun.shadow.mapSize.set(1536,1536);sun.shadow.camera.left=-100;sun.shadow.camera.right=100;sun.shadow.camera.top=100;sun.shadow.camera.bottom=-100;scene.add(sun);
+ const sand=material(0xd9b779);const ground=new THREE.Mesh(new THREE.PlaneGeometry(600,600),sand);ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
+ const duneMats=[material(0xc99d62),material(0xe0bd83),material(0xd4ad73)];
+ for(let i=0;i<36;i++){const d=new THREE.Mesh(new THREE.SphereGeometry(1,16,10),duneMats[i%3]);d.scale.set(18+Math.random()*28,2+Math.random()*4,9+Math.random()*19);d.position.set((Math.random()-.5)*340,-1.7,-55-Math.random()*260);scene.add(d)}
+ // distant pyramid silhouettes
+ const pyramidMat=material(0x9c8059);for(const [x,z,s] of [[-85,-145,32],[85,-205,42],[-145,-245,48]]){const p=new THREE.Mesh(new THREE.ConeGeometry(s,s*1.15,4),pyramidMat);p.rotation.y=Math.PI/4;p.position.set(x,s*.52,z);scene.add(p)}
+ // oasis and palms
+ const pool=new THREE.Mesh(new THREE.CircleGeometry(12,48),new THREE.MeshStandardMaterial({color:0x348f9a,roughness:.22,metalness:.12}));pool.rotation.x=-Math.PI/2;pool.position.set(25,.035,-25);scene.add(pool);
+ for(let i=0;i<10;i++){const a=i*Math.PI/5,x=25+Math.cos(a)*16,z=-25+Math.sin(a)*16;const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.32,.48,7,9),material(0x76502e));trunk.position.set(x,3.5,z);trunk.castShadow=true;scene.add(trunk);for(let j=0;j<7;j++){const leaf=new THREE.Mesh(new THREE.ConeGeometry(.55,6.5,6),material(0x45633c));leaf.position.set(x+Math.cos(j*Math.PI/3.5)*1.9,7,z+Math.sin(j*Math.PI/3.5)*1.9);leaf.rotation.z=-Math.PI/2.7;leaf.rotation.y=j*Math.PI/3.5;scene.add(leaf)}}
+ // mudbrick village
+ const brick=material(0xb58a5d),roof=material(0x856344),door=material(0x493324);
+ for(let i=0;i<10;i++){const x=-42+(i%4)*12,z=-20-Math.floor(i/4)*13;box(scene,8,4.5,7,brick,x,2.25,z);box(scene,8.5,.45,7.5,roof,x,4.7,z);box(scene,1.35,2.5,.12,door,x,1.25,z+3.56)}
+ // monumental temple and columns
+ const templeX=5,templeZ=-116;box(scene,42,2,28,material(0x9f8967),templeX,1,templeZ);box(scene,38,13,2,material(0xb9a47b),templeX,8,templeZ-13);
+ for(let i=0;i<8;i++){const x=templeX-16+i*4.6;const col=new THREE.Mesh(new THREE.CylinderGeometry(.85,1.05,11,12),material(0xc4ad80));col.position.set(x,7,templeZ+7);col.castShadow=true;scene.add(col);const cap=new THREE.Mesh(new THREE.CylinderGeometry(1.4,1.1,1.2,12),material(0xd0b987));cap.position.set(x,12.8,templeZ+7);scene.add(cap)}
+ const obelisk=new THREE.Mesh(new THREE.CylinderGeometry(.55,.85,15,4),material(0xbca67b));obelisk.position.set(-19,7.5,-88);obelisk.rotation.y=Math.PI/4;scene.add(obelisk);
+ // Sphinx-like monument
+ const sphinx=new THREE.Group();const base=box(sphinx,12,2,5,material(0x9b805e),0,1,0);const body=box(sphinx,10,2.1,3.5,material(0xb39a70),0,2.8,0);const head=new THREE.Mesh(new THREE.BoxGeometry(2.2,3,2),material(0xc3aa7b));head.position.set(3.7,4.4,0);sphinx.add(head);sphinx.position.set(-42,0,-91);scene.add(sphinx);
+ player=makePerson();player.position.set(0,0,8);scene.add(player);
+ // NPCs
+ for(let i=0;i<4;i++){const n=makePerson();n.scale.setScalar(.88);n.position.set(-25+i*12,0,-18-(i%2)*9);scene.add(n)}
+ // relics
+ const relicPos=[[-62,-65],[-38,-8],[10,-55],[54,-88],[83,-42],[112,-105]];
+ for(const [x,z] of relicPos){const g=new THREE.Group();const pedestal=new THREE.Mesh(new THREE.CylinderGeometry(.55,.72,.24,10),material(0x705033));pedestal.position.y=.12;g.add(pedestal);const gem=new THREE.Mesh(new THREE.OctahedronGeometry(.52),new THREE.MeshStandardMaterial({color:0xf1c45d,metalness:.65,roughness:.2,emissive:0x553000}));gem.position.y=.95;g.add(gem);const glow=new THREE.PointLight(0xf4c66c,1.1,5);glow.position.y=1;g.add(glow);g.position.set(x,0,z);scene.add(g);relics.push({g,found:false})}
+ // optional GLB models; failures do not block game start
+ const loader=new GLTFLoader();const assets=[['desert-step-pyramid.glb',-65,-95,1.7],['great-sandstone-sphinx.glb',-42,-83,1.5],['desert-temple-hall.glb',5,-115,1.5],['pharaoh-colossi-gate.glb',5,-92,1.2],['desert-tomb-entrance.glb',68,-72,1.4],['desert-city-gate.glb',-18,-48,1.1],['desert-obelisk-set.glb',-5,-72,1.1],['desert-camel-caravan.glb',-52,18,1]];
+ let loaded=0;for(const [file,x,z,s] of assets){loader.load('./'+file,g=>{const m=g.scene;m.scale.setScalar(s);m.position.set(x,0,z);m.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});scene.add(m);loaded++;$('progress').style.width=(loaded/assets.length*100)+'%'},undefined,()=>{loaded++;$('progress').style.width=(loaded/assets.length*100)+'%'})}
+}
+function setup(){
+ renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+ camera=new THREE.PerspectiveCamera(58,1,.1,650);clock=new THREE.Clock();makeWorld();resize();
+}
+function controls(){
+ const stick=$('stick'),nub=$('nub');
+ function move(e){const r=stick.getBoundingClientRect();let dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2,len=Math.hypot(dx,dy),max=r.width*.34;if(len>max){dx*=max/len;dy*=max/len}joy.x=dx/max;joy.y=dy/max;nub.style.transform=`translate(${dx}px,${dy}px)`}
+ stick.addEventListener('pointerdown',e=>{stick.setPointerCapture(e.pointerId);move(e)});stick.addEventListener('pointermove',e=>{if(e.buttons||e.pressure>0)move(e)});function reset(){joy={x:0,y:0};nub.style.transform='translate(0,0)'}stick.addEventListener('pointerup',reset);stick.addEventListener('pointercancel',reset);
+ const run=$('run');run.addEventListener('pointerdown',e=>{e.preventDefault();running=true;run.classList.add('active')});for(const ev of ['pointerup','pointercancel','pointerleave'])run.addEventListener(ev,()=>{running=false;run.classList.remove('active')});
+ renderer.domElement.addEventListener('pointerdown',e=>{if(e.clientX>innerWidth*.38)drag={x:e.clientX,y:e.clientY}});
+ renderer.domElement.addEventListener('pointermove',e=>{if(drag){yaw-=(e.clientX-drag.x)*.006;pitch=THREE.MathUtils.clamp(pitch+(e.clientY-drag.y)*.002,-.05,.7);drag={x:e.clientX,y:e.clientY}}});
+ for(const ev of ['pointerup','pointercancel','pointerleave'])renderer.domElement.addEventListener(ev,()=>drag=null);
+ $('interact').addEventListener('click',()=>{let near=null,dist=1e9;for(const r of relics){const d=player.position.distanceTo(r.g.position);if(!r.found&&d<dist){dist=d;near=r}}if(near&&dist<5.5){near.found=true;near.g.visible=false;found++;$('found').textContent=found;toast(found===6?'Tüm eserler bulundu. Tapınağa dön!':`Kutsal eser bulundu • ${found}/6`)}else toast('İncelenecek bir eser yeterince yakın değil.')});
+}
+function animate(){
+ requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.04);
+ for(const r of relics)if(!r.found){r.g.rotation.y+=dt*.75;r.g.position.y=.08+Math.sin(performance.now()*.0015+r.g.position.x)*.08}
+ const speed=running?10.5:5.4;const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw)),right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));const move=forward.multiplyScalar(-joy.y).add(right.multiplyScalar(joy.x));
+ if(move.lengthSq()>.01){move.normalize();player.position.addScaledVector(move,speed*dt);player.rotation.y=Math.atan2(move.x,move.z);const t=performance.now()*.012;player.userData.legs.forEach((l,i)=>l.rotation.x=Math.sin(t+i*Math.PI)*.55*(running?1:.65));player.userData.arms.forEach((a,i)=>a.rotation.x=Math.sin(t+i*Math.PI+Math.PI)*.35)}
+ const horizontal=8.5,vertical=4.1+pitch*5;const desired=new THREE.Vector3(player.position.x+Math.sin(yaw)*horizontal,player.position.y+vertical,player.position.z+Math.cos(yaw)*horizontal);camera.position.lerp(desired,1-Math.pow(.001,dt));camera.lookAt(player.position.x,1.35,player.position.z);
+ renderer.render(scene,camera);
+}
+try{setup();controls();animate();setTimeout(()=>{if(!ready){ready=true;$('loading').style.opacity=0;setTimeout(()=>$('loading').remove(),550);toast('Keşif başladı. Eserleri bul!')}},1800);window.addEventListener('resize',resize);window.addEventListener('orientationchange',()=>setTimeout(resize,250));if(window.visualViewport){visualViewport.addEventListener('resize',resize);visualViewport.addEventListener('scroll',resize)}}catch(e){console.error(e);$('loading').querySelector('p').textContent='Oyun başlatılamadı: '+e.message}
 </script>
-</body>
-</html>
+</body></html>
