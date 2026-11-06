@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#19150f">
-<title>MEDJAY 3.2 — Kartal, Kayalıklar ve Medjay</title>
+<title>MEDJAY 3.3 — Çarpışma ve Mimari Yenileme</title>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 <style>
 :root{--gold:#edcc83;--glass:rgba(16,19,20,.82);--edge:rgba(237,204,131,.48)}
@@ -49,7 +49,7 @@ button:active,button.active{filter:brightness(1.4);transform:scale(.96)}
 <div id="game"></div>
 <div id="rotate">MEDJAY'i oynamak için telefonu yatay çevir.</div>
 <div id="hud">
-  <div class="brand">MEDJAY<small>ANTİK MISIR KEŞFİ</small></div>
+  <div class="brand">MEDJAY<small>ANTİK MISIR KEŞFİ · 3.3</small></div>
   <div class="panel"><b id="missionLabel">ANA GÖREV</b><span id="mission">Altı kutsal eseri bul ve Karnak Tapınağı'na ulaş.</span></div>
   <div id="counter">KUTSAL ESERLER &nbsp;<strong><span id="found">0</span> / 6</strong></div>
   <div id="toast"></div>
@@ -85,6 +85,9 @@ function startGame(THREE){
   let jumpVelocity = 0, grounded = true, lookPointer = null;
   let found = 0, gameWon = false, scouting = false, scoutUntil = 0;
   const relics = [];
+  // World-space collision boxes generated from the detailed GLB architecture.
+  const structureColliders = [];
+  const PLAYER_RADIUS = 0.62;
   let scoutBird=null;
   const npcWanderers = [];
   const up = new THREE.Vector3(0,1,0);
@@ -289,6 +292,27 @@ function startGame(THREE){
     scene.add(mesh);return mesh;
   }
 
+  function blockedAt(x,z){
+    const px=PLAYER_RADIUS;
+    const playerBottom=player.position.y;
+    const playerTop=playerBottom+2.55;
+    for(const b of structureColliders){
+      if(playerTop<=b.min.y+.08 || playerBottom>=b.max.y-.08) continue;
+      const cx=THREE.MathUtils.clamp(x,b.min.x,b.max.x);
+      const cz=THREE.MathUtils.clamp(z,b.min.z,b.max.z);
+      const dx=x-cx,dz=z-cz;
+      if(dx*dx+dz*dz<px*px) return true;
+    }
+    return false;
+  }
+  function moveWithCollision(dx,dz){
+    const x=player.position.x+dx;
+    const z=player.position.z+dz;
+    // Resolve each axis separately so the player can slide along walls.
+    if(!blockedAt(x,player.position.z)) player.position.x=x;
+    if(!blockedAt(player.position.x,z)) player.position.z=z;
+  }
+
   function createWorld(){
     scene=new THREE.Scene();
     scene.background=new THREE.Color(0x9fc6d4);
@@ -343,25 +367,9 @@ function startGame(THREE){
       rock.scale.set(1.5+Math.random()*2,.55+Math.random()*.6,1+Math.random()*2);
       rock.rotation.y=Math.random()*Math.PI;
     }
-    pyramid(-105,-195,39); pyramid(115,-260,53); pyramid(-185,-315,48); pyramid(-55,-125,25,0xc4a779);
+    // Detailed pyramid GLBs replace the old low-poly placeholder pyramids.
 
-    // Ancient village
-    for(let i=0;i<12;i++){
-      const x=-48+(i%4)*13,z=-23-Math.floor(i/4)*14;
-      box(8.5,4.7,7.4,M.mud,x,2.35,z);
-      box(9,.42,7.8,M.roof,x,4.9,z);
-      box(1.3,2.4,M.leather,x,1.2,z+3.77);
-      for(let w=0;w<2;w++) box(.8,1.1,.12,M.blue,x-2+w*4,2.6,z+3.78);
-    }
-    // Market, pottery and awnings
-    for(let i=0;i<5;i++){
-      const x=-58+i*18,z=17+(i%2)*6;
-      box(8,.3,5,M.darkStone,x,.15,z);
-      box(8,.18,5,M.blue,x,3.5,z);
-      cyl(.12,.12,3,M.leather,x-3.5,1.9,z);
-      cyl(.12,.12,3,M.leather,x+3.5,1.9,z);
-      jar(x-1,z+1.5,0x9b613d); jar(x+1,z+1.5,0xa7794d);
-    }
+    // Village and market architecture are supplied by detailed GLB assets.
     // Oasis pool and palms
     const water=add(new THREE.CircleGeometry(14,48),M.water,31,.03,-31);
     water.rotation.x=-Math.PI/2;
@@ -370,27 +378,8 @@ function startGame(THREE){
       palm(31+Math.cos(a)*18,-31+Math.sin(a)*18);
     }
     // Karnak temple and sphinx avenue
-    temple();
-    for(let i=0;i<9;i++){
-      const x=-35+i*11,z=-83;
-      box(4.2,1.2,2.5,M.darkStone,x,.6,z);
-      box(2.7,1.7,2,M.sandstone,x,2,z);
-      box(1.45,2.1,1.45,M.sandstone,x+1.2,3.6,z);
-    }
-    sphinx(-62,-102,1.15); sphinx(65,-102,1.15); sphinx(-80,-153,.8);
-    // Ruined columns and scattered rocks
-    for(let i=0;i<32;i++){
-      const x=(Math.random()-.5)*210,z=-48-Math.random()*195;
-      if(Math.abs(x)<35 && z<-120 && z>-170) continue;
-      const h=1+Math.random()*4.5;
-      cyl(.35,.58,h,M.edgeStone,x,h/2,z);
-      cyl(.72,.6,.3,M.sandstone,x,h+.12,z);
-    }
-    for(let i=0;i<35;i++){
-      const x=(Math.random()-.5)*190,z=-25-Math.random()*190;
-      const rock=sphere(.7,M.edgeStone,x,.3,z,scene,8);
-      rock.scale.set(1.2,.65,.8);
-    }
+    // Karnak, sphinxes and monumental gates are rendered by the detailed GLB set.
+    // Ruined architecture is represented by the detailed GLB ruins.
     // Obelisks, fire bowls and decorative standards
     const o=add(new THREE.CylinderGeometry(.45,.75,16,4),M.gold,(-15),8,-91);o.rotation.y=Math.PI/4;
     for(let i=0;i<5;i++){
@@ -491,6 +480,8 @@ function startGame(THREE){
         bounds=new THREE.Box3().setFromObject(model);
         const center=new THREE.Vector3();bounds.getCenter(center);
         model.position.set(item.x-center.x,-bounds.min.y,item.z-center.z);
+        scene.add(model);
+        model.updateMatrixWorld(true);
         model.traverse(o=>{
           if(o.isMesh){
             o.castShadow=false;o.receiveShadow=false;
@@ -498,9 +489,16 @@ function startGame(THREE){
               const mats=Array.isArray(o.material)?o.material:[o.material];
               mats.forEach(m=>{m.side=THREE.DoubleSide;});
             }
+            // Use individual mesh bounds, not one giant box around the whole building;
+            // this preserves doors, gaps and walkable courtyards wherever the model has them.
+            o.updateWorldMatrix(true,false);
+            const b=new THREE.Box3().setFromObject(o);
+            const size=new THREE.Vector3(); b.getSize(size);
+            if(size.x>.55 && size.z>.55 && size.y>.75 && size.x<55 && size.z<55 && size.y<45){
+              structureColliders.push(b.clone());
+            }
           }
         });
-        scene.add(model);
         loaded++;
       }catch(err){
         failed++;
@@ -620,7 +618,7 @@ function startGame(THREE){
     if(moving){
       direction.normalize();
       const speed=running?9.8:5.1;
-      player.position.addScaledVector(direction,speed*dt);
+      moveWithCollision(direction.x*speed*dt,direction.z*speed*dt);
       player.rotation.y=Math.atan2(direction.x,direction.z);
       const gait=t*(running?13:9);
       player.userData.legs.forEach((l,i)=>l.rotation.x=Math.sin(gait+i*Math.PI)*.52);
