@@ -697,51 +697,51 @@ function startGame(THREE){
   }
 
 
-  async function loadDetailedModels(){
+async function loadDetailedModels(){
     const {GLTFLoader}=await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js');
     const loader=new GLTFLoader();
+    const base='https://raw.githubusercontent.com/anishthite/cc0-models-Polygonal-Mind/main/projects/tomb-chaser-1/';
     const assets=[
-      // The first landmark cluster is deliberately close to the spawn point,
-      // so the new models are immediately visible instead of being kilometres away.
-      {file:'desert-city-gate.glb',x:0,z:-62,size:38},
-      {file:'great-sandstone-sphinx.glb',x:-34,z:-94,size:25},
-      {file:'desert-step-pyramid.glb',x:76,z:-170,size:52},
-      {file:'desert-temple-hall.glb',x:4,z:-218,size:48},
-      {file:'pharaoh-colossi-gate.glb',x:39,z:-194,size:34},
-      {file:'desert-camel-caravan.glb',x:-45,z:32,size:22},
-      {file:'desert-bazaar-stall.glb',x:23,z:34,size:17},
-      {file:'desert-oasis-camp.glb',x:60,z:53,size:27},
-      {file:'desert-tomb-entrance.glb',x:145,z:-95,size:26},
-      {file:'desert-obelisk-set.glb',x:-58,z:-112,size:18},
-      {file:'sandstone-ruin-kit.glb',x:-88,z:-62,size:19},
-      {file:'desert-tent-camp.glb',x:-92,z:70,size:28},
-      {file:'desert-dig-site.glb',x:125,z:-39,size:23},
-      {file:'desert-tomb-terrain-kit.glb',x:148,z:-112,size:35},
-      {file:'tomb-trap-corridor.glb',x:157,z:-120,size:17},
-      {file:'desert-treasure-vault.glb',x:164,z:-137,size:18},
-      {file:'desert-throne-room.glb',x:34,z:-225,size:28},
-      {file:'royal-desert-sarcophagus.glb',x:172,z:-145,size:10},
-      {file:'desert-relics-set.glb',x:-8,z:-72,size:13},
-      {file:'desert-carved-tablets.glb',x:-122,z:-83,size:17},
-      {file:'desert-well.glb',x:-75,z:61,size:13},
-      {file:'buried-reed-boat.glb',x:45,z:-16,size:15},
-      {file:'desert-animals-set.glb',x:92,z:50,size:18},
-      {file:'mud-brick-desert-house.glb',x:-35,z:-18,size:18}
+      {file:'TempleFloor01_Art.glb',x:8,z:-138,size:26},
+      {file:'TempleFloor02_Art.glb',x:8,z:-111,size:24},
+      {file:'TempleFloor03_Art.glb',x:34,z:-138,size:24},
+      {file:'TempleFloor04_Art.glb',x:-18,z:-138,size:24},
+      {file:'TempleArch01_Art.glb',x:8,z:-158,size:15},
+      {file:'TempleArch02_Art.glb',x:8,z:-118,size:14},
+      {file:'Column_Art.glb',x:-10,z:-151,size:12},
+      {file:'Column_Art.glb',x:26,z:-151,size:12},
+      {file:'Column_Art.glb',x:-10,z:-125,size:12},
+      {file:'Column_Art.glb',x:26,z:-125,size:12},
+      {file:'Wall01_Art.glb',x:-7,z:-166,size:17},
+      {file:'Wall02_Art.glb',x:23,z:-166,size:17},
+      {file:'Wall03_Art.glb',x:-7,z:-110,size:17},
+      {file:'Obelisk_Art.glb',x:-31,z:-145,size:14},
+      {file:'PalmTree_Art.glb',x:49,z:-103,size:12},
+      {file:'Oasis_Art.glb',x:53,z:-76,size:17},
+      {file:'SandMount_Art.glb',x:112,z:-78,size:23},
+      {file:'Door_Art.glb',x:8,z:-166,size:9},
+      {file:'Torch_Art.glb',x:-1,z:-153,size:5},
+      {file:'FireTorch01_Art.glb',x:17,z:-153,size:5},
+      {file:'Jar01_Art.glb',x:-2,z:-130,size:3},
+      {file:'Jar02_Art.glb',x:18,z:-130,size:3},
+      {file:'InteriorEmbelisher01_Art.glb',x:-13,z:-139,size:5},
+      {file:'InteriorEmbelisher02_Art.glb',x:29,z:-139,size:5},
+      {file:'TempleEmbelisher01_Art.glb',x:8,z:-147,size:6},
+      {file:'TempleEmbelisher02_Art.glb',x:0,z:-147,size:5},
+      {file:'TempleEmbelisher03_Art.glb',x:16,z:-147,size:5}
     ];
-    let loaded=0, failed=0;
-    const total=assets.length;
-    // Load one-by-one: avoids 24 simultaneous downloads and memory spikes on iPhone.
-    for(const item of assets){
+    let loaded=0,failed=0;
+    for(let i=0;i<assets.length;i++){
+      const item=assets[i];
       try{
-        const gltf=await loader.loadAsync(new URL(item.file,document.baseURI).href);
+        const gltf=await loader.loadAsync(base+item.file);
         const model=gltf.scene;
         model.updateMatrixWorld(true);
         let bounds=new THREE.Box3().setFromObject(model);
-        const dims=new THREE.Vector3(); bounds.getSize(dims);
+        const dims=new THREE.Vector3();bounds.getSize(dims);
         const maxDim=Math.max(dims.x,dims.y,dims.z);
-        if(!Number.isFinite(maxDim)||maxDim<.001) throw new Error('Boş model: '+item.file);
-        const targetScale=item.size/maxDim;
-        model.scale.setScalar(targetScale);
+        if(!Number.isFinite(maxDim)||maxDim<.001)throw new Error('Boş model: '+item.file);
+        model.scale.setScalar(item.size/maxDim);
         model.updateMatrixWorld(true);
         bounds=new THREE.Box3().setFromObject(model);
         const center=new THREE.Vector3();bounds.getCenter(center);
@@ -749,37 +749,33 @@ function startGame(THREE){
         scene.add(model);
         model.updateMatrixWorld(true);
         model.traverse(o=>{
-          if(o.isMesh){
-            o.castShadow=false;o.receiveShadow=false;
-            if(o.material){
-              const mats=Array.isArray(o.material)?o.material:[o.material];
-              mats.forEach(m=>{m.side=THREE.DoubleSide;});
-            }
-            // Use individual mesh bounds, not one giant box around the whole building;
-            // this preserves doors, gaps and walkable courtyards wherever the model has them.
-            o.updateWorldMatrix(true,false);
-            const b=new THREE.Box3().setFromObject(o);
-            const size=new THREE.Vector3(); b.getSize(size);
-            if(size.x>.55 && size.z>.55 && size.y>.75 && size.x<55 && size.z<55 && size.y<45){
-              structureColliders.push(b.clone());
-            }
+          if(!o.isMesh)return;
+          o.castShadow=false;o.receiveShadow=false;
+          if(o.material){
+            const mats=Array.isArray(o.material)?o.material:[o.material];
+            mats.forEach(m=>{m.side=THREE.DoubleSide;});
           }
+          o.updateWorldMatrix(true,false);
+          const b=new THREE.Box3().setFromObject(o);
+          const s=new THREE.Vector3();b.getSize(s);
+          if(s.x>.55&&s.z>.55&&s.y>.75&&s.x<55&&s.z<55&&s.y<45)structureColliders.push(b.clone());
         });
         loaded++;
       }catch(err){
         failed++;
-        console.error('3D model yüklenemedi:',item.file,err);
+        console.warn('3D model yüklenemedi:',item.file,err);
       }
-      const pct=Math.round((loaded+failed)/total*100);
+      const pct=Math.round((i+1)/assets.length*100);
       loadFill.style.width=pct+'%';
-      loadText.textContent=`Mısır dünyası yükleniyor… ${loaded}/${total} model`;
-      $('mission').textContent=`Gerçek 3D yapılar yükleniyor: ${loaded}/${total}`;
+      loadText.textContent='Antik Mısır mimarisi yükleniyor… '+loaded+'/'+assets.length;
+      $('mission').textContent='Tapınak ve şehir parçaları yükleniyor: '+loaded+'/'+assets.length;
     }
     $('mission').textContent='Altı kutsal eseri bul ve Karnak Tapınağı’na ulaş.';
-    if(loaded) toast(`${loaded} gerçek 3D yapı sahneye yerleştirildi${failed?` · ${failed} model yüklenemedi`:''}.`);
-    else toast('3D modeller sunucudan yüklenemedi. Bağlantı hatasını kontrol et.');
+    if(loaded)toast(loaded+' gerçek 3D Mısır mimarisi modeli yüklendi'+(failed?' · '+failed+' model atlandı':'')+'.');
+    else toast('3D modeller yüklenemedi; temel dünya açık.');
     return loaded;
   }
+
 
   function resize(){
     if(!renderer||!camera) return;
