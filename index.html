@@ -14,7 +14,7 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
 import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
 const $=id=>document.getElementById(id),root=$('game');
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bc4d5);scene.fog=new THREE.Fog(0xd9b77f,.003,260);
-const camera=new THREE.PerspectiveCamera( sixty=62,innerWidth/innerHeight,.1,500);
+const camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,.1,500);
 const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.35));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;root.appendChild(renderer.domElement);
 scene.add(new THREE.HemisphereLight(0xffe7c0,0x705037,2));const sun=new THREE.DirectionalLight(0xffdfaa,2.3);sun.position.set(-45,80,35);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
 const mat=(c,r=.9)=>new THREE.MeshStandardMaterial({color:c,roughness:r});const sand=mat(0xd6ad70),dark=mat(0x51402f),stone=mat(0xb9a078),water= new THREE.MeshStandardMaterial({color:0x3d9caa,roughness:.25});
