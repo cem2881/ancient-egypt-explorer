@@ -54,8 +54,8 @@ button:active,button.active{filter:brightness(1.4);transform:scale(.96)}
   <div id="counter">KUTSAL ESERLER &nbsp;<strong><span id="found">0</span> / 6</strong></div>
   <div id="toast"></div>
   <div id="stick"><div id="nub"></div></div>
-  <div class="actions"><button id="run">KOŞ</button><button id="jump">ZIPLA</button><button class="primary" id="act">İNCELE</button></div>
-  <div id="help">SOL JOYSTICK: HAREKET &nbsp; • &nbsp; SAĞ TARAFI SÜRÜKLE: KAMERA &nbsp; • &nbsp; İNCELE: ETKİLEŞİM</div>
+  <div class="actions"><button id="run">KOŞ</button><button id="jump">ZIPLA</button><button id="scout">ŞAHİN</button><button class="primary" id="act">İNCELE</button></div>
+  <div id="help">SOL JOYSTICK: HAREKET &nbsp; • &nbsp; SAĞ TARAFI SÜRÜKLE: KAMERA &nbsp; • &nbsp; ŞAHİN: HAVADAN KEŞİF &nbsp; • &nbsp; İNCELE: ETKİLEŞİM</div>
 </div>
 <div id="loading"><div class="loadcard"><h1>MEDJAY</h1><p id="loadtext">Antik Mısır dünyası hazırlanıyor…</p><div id="loadbar"><div id="loadfill"></div></div><button id="retry">TEKRAR DENE</button></div></div>
 
@@ -83,8 +83,9 @@ function startGame(THREE){
   let renderer, scene, camera, clock, player;
   let yaw = 0, pitch = .2, joy = {x:0,y:0}, running = false;
   let jumpVelocity = 0, grounded = true, lookPointer = null;
-  let found = 0, gameWon = false;
+  let found = 0, gameWon = false, scouting = false, scoutUntil = 0;
   const relics = [];
+  let scoutBird=null;
   const npcWanderers = [];
   const up = new THREE.Vector3(0,1,0);
 
@@ -367,6 +368,15 @@ function startGame(THREE){
     }
 
     player=makeMedjay(); player.position.set(0,0,13); scene.add(player);
+    // Original falcon companion for a short aerial reconnaissance pulse.
+    scoutBird=new THREE.Group();
+    const birdBody=sphere(.34,mat(0x6b5137),0,0,0,scoutBird,12); birdBody.scale.set(1.5,.65,.7);
+    sphere(.2,mat(0x8b6b45),.38,.08,.02,scoutBird,10);
+    const beak=add(new THREE.ConeGeometry(.075,.24,6),M.gold,.58,.02,.03,scoutBird);beak.rotation.z=-Math.PI/2;
+    for(const side of [-1,1]){
+      const wing=box(.72,.07,.32,mat(0x3e3024),-.02,.1,side*.3,scoutBird);wing.rotation.z=side*.15;
+    }
+    scoutBird.visible=false;scene.add(scoutBird);
 
     // Six relics on pedestals
     const positions=[[-74,-56],[-40,21],[15,-61],[55,-108],[99,-50],[122,-132]];
@@ -401,7 +411,21 @@ function startGame(THREE){
       {file:'desert-tomb-entrance.glb',x:116,z:-78,size:19},
       {file:'desert-obelisk-set.glb',x:67,z:-218,size:17},
       {file:'desert-oasis-camp.glb',x:75,z:35,size:22},
-      {file:'sandstone-ruin-kit.glb',x:-112,z:-65,size:18}
+      {file:'sandstone-ruin-kit.glb',x:-112,z:-65,size:18},
+      {file:'desert-city-gate.glb',x:5,z:64,size:27},
+      {file:'desert-tent-camp.glb',x:-105,z:68,size:24},
+      {file:'desert-dig-site.glb',x:142,z:-42,size:22},
+      {file:'desert-tomb-terrain-kit.glb',x:158,z:-112,size:34},
+      {file:'tomb-trap-corridor.glb',x:166,z:-116,size:16},
+      {file:'desert-treasure-vault.glb',x:172,z:-127,size:17},
+      {file:'desert-throne-room.glb',x:35,z:-230,size:27},
+      {file:'royal-desert-sarcophagus.glb',x:174,z:-134,size:9},
+      {file:'desert-relics-set.glb',x:-8,z:-72,size:12},
+      {file:'desert-carved-tablets.glb',x:-122,z:-83,size:16},
+      {file:'desert-well.glb',x:-75,z:61,size:12},
+      {file:'buried-reed-boat.glb',x:45,z:-16,size:14},
+      {file:'desert-animals-set.glb',x:92,z:50,size:17},
+      {file:'mud-brick-desert-house.glb',x:-84,z:28,size:14}
     ];
     let loaded=0;
     const jobs=assets.map(item=>new Promise(resolve=>{
@@ -430,7 +454,7 @@ function startGame(THREE){
     }));
     const results=await Promise.all(jobs);
     const success=results.filter(Boolean).length;
-    if(success) toast(`${success} yüksek detaylı Mısır modeli yüklendi.`);
+    if(success) toast(`${success} gerçek 3D Mısır modeli yüklendi. Şahin için Q / ŞAHİN.`);
     else toast('3D modeller yüklenemedi; temel dünya açık.');
     return success;
   }
@@ -495,6 +519,12 @@ function startGame(THREE){
     ['pointerup','pointercancel','pointerleave'].forEach(ev=>run.addEventListener(ev,()=>{running=false;run.classList.remove('active')}));
     $('jump').addEventListener('pointerdown',e=>{e.preventDefault();if(grounded){jumpVelocity=7.4;grounded=false}});
     $('act').addEventListener('click',interact);
+    $('scout').addEventListener('click',()=>{
+      scouting=!scouting;
+      scoutBird.visible=scouting;
+      if(scouting){scoutUntil=clock.elapsedTime+9;toast('Şahin havalandı: çevreyi yukarıdan keşfet.');}
+      else toast('Şahin keşfinden dönüldü.');
+    });
     renderer.domElement.addEventListener('pointerdown',e=>{
       if(e.clientX>innerWidth*.38) lookPointer={x:e.clientX,y:e.clientY};
     });
@@ -509,6 +539,7 @@ function startGame(THREE){
     addEventListener('keydown',e=>{
       if(e.key==='Shift')running=true;
       if(e.key==='e'||e.key==='E')interact();
+      if(e.key==='q'||e.key==='Q'){scouting=!scouting;scoutBird.visible=scouting;scoutUntil=clock.elapsedTime+9;}
       if(e.key===' '&&grounded){jumpVelocity=7.4;grounded=false}
     });
     addEventListener('keyup',e=>{if(e.key==='Shift')running=false});
@@ -546,13 +577,22 @@ function startGame(THREE){
     }
     player.position.x=THREE.MathUtils.clamp(player.position.x,-220,220);
     player.position.z=THREE.MathUtils.clamp(player.position.z,-360,100);
+    if(scouting){
+      const orbit=clock.elapsedTime;
+      scoutBird.position.set(player.position.x+Math.sin(orbit*1.5)*2.2,player.position.y+3.2+Math.sin(orbit*4)*.18,player.position.z-2.4);
+      scoutBird.rotation.y=Math.sin(orbit*1.5)*.35;
+      if(orbit>scoutUntil){scouting=false;scoutBird.visible=false;}
+    }
     const desired=new THREE.Vector3(
       player.position.x+Math.sin(yaw)*8.7,
       player.position.y+4.15+pitch*5,
       player.position.z+Math.cos(yaw)*8.7
     );
-    camera.position.lerp(desired,1-Math.pow(.001,dt));
-    camera.lookAt(player.position.x,1.4+player.position.y,player.position.z);
+    const cameraTarget=scouting
+      ? new THREE.Vector3(player.position.x,player.position.y+28,player.position.z+10)
+      : desired;
+    camera.position.lerp(cameraTarget,1-Math.pow(.001,dt));
+    camera.lookAt(player.position.x,scouting?0:1.4+player.position.y,player.position.z);
     renderer.render(scene,camera);
   }
   try{
