@@ -1,40 +1,34 @@
-(
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Kayıp Firavun 2.0</title>
+<title>Kayıp Firavun 2.1</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;overflow:hidden;background:#d7ad75;font-family:Arial;touch-action:none}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#d9ae79;font-family:Arial;touch-action:none}
 canvas{display:block}
-#hud{position:absolute;top:14px;left:15px;color:#fff;text-shadow:0 2px 5px #392313;pointer-events:none}
+#hud{position:fixed;top:14px;left:15px;color:white;text-shadow:0 2px 5px #392313;pointer-events:none;z-index:4}
 #hud h2{font-size:19px;margin:0;letter-spacing:2px}
 #hud p{font-size:10px;letter-spacing:2px}
-#location{position:absolute;top:85px;left:15px;color:#fff;font-size:11px;text-shadow:0 2px 4px #222}
-#joy{position:absolute;bottom:28px;left:25px;width:120px;height:120px;border-radius:50%;background:#ffffff30;border:2px solid #ffffff75;z-index:5}
-#stick{position:absolute;left:34px;top:34px;width:48px;height:48px;border-radius:50%;background:#fff9}
-#turn{position:absolute;right:26px;bottom:43px;width:76px;height:76px;border-radius:50%;background:#ffffff35;border:2px solid #ffffff80;color:white;font-size:28px;z-index:5}
-#help{position:absolute;bottom:8px;left:0;width:100%;text-align:center;color:white;font-size:10px;text-shadow:0 2px 4px #222;pointer-events:none}
+#location{position:fixed;top:85px;left:15px;color:white;font-size:11px;text-shadow:0 2px 4px #222;pointer-events:none;z-index:4}
+#joy{position:fixed;bottom:28px;left:25px;width:120px;height:120px;border-radius:50%;background:#ffffff30;border:2px solid #ffffff75;z-index:5;touch-action:none}
+#stick{position:absolute;left:34px;top:34px;width:48px;height:48px;border-radius:50%;background:#ffffffbd;pointer-events:none}
+#lookArea{position:fixed;right:0;top:0;width:55%;height:100%;z-index:2;touch-action:none;background:transparent}
+#help{position:fixed;bottom:8px;left:0;width:100%;text-align:center;color:white;font-size:10px;text-shadow:0 2px 4px #222;pointer-events:none;z-index:6}
 </style>
-#lookArea {
-  position: fixed;
-  right: 0;
-  top: 0;
-  width: 55%;
-  height: 100%;
-  z-index: 2;
-  touch-action: none;
-  background: transparent;
-}
 </head>
 <body>
-<div id="hud"><h2>𓂀 KAYIP FİRAVUN</h2><p>ANTİK MISIR • KEŞİF</p></div>
+
+<div id="hud">
+<h2>𓂀 KAYIP FİRAVUN</h2>
+<p>ANTİK MISIR • KEŞİF</p>
+</div>
 <div id="location">GIZA ÇÖLÜ · MISIR</div>
 <div id="joy"><div id="stick"></div></div>
 <div id="lookArea"></div>
-<div id="help">Sürükleyerek hareket et · Sağdaki tuşla kamerayı çevir</div>
+<div id="help">Sol taraf: Hareket · Sağ taraf: Kamerayı çevir</div>
 
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
@@ -46,7 +40,7 @@ scene.fog=new THREE.Fog(0xd9ae79,65,190);
 const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,250);
 const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:"low-power"});
 renderer.setSize(innerWidth,innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.35));
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.25));
 renderer.outputColorSpace=THREE.SRGBColorSpace;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure=1.15;
@@ -57,9 +51,7 @@ const sun=new THREE.DirectionalLight(0xffd59b,2.3);
 sun.position.set(-40,70,35);
 scene.add(sun);
 
-// Materyaller
 const mat=(color,roughness=1)=>new THREE.MeshStandardMaterial({color,roughness});
-const sandMat=mat(0xd9ad6d);
 const stone=mat(0xb99464);
 const lightStone=mat(0xd8bb8c);
 const darkStone=mat(0x94714c);
@@ -68,31 +60,45 @@ const wood=mat(0x80502e);
 
 function addBox(x,y,z,w,h,d,material){
 const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);
-m.position.set(x,y,z);scene.add(m);return m;
-}
-function addCylinder(x,y,z,r1,r2,h,material,sides=8){
-const m=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,sides),material);
-m.position.set(x,y,z);scene.add(m);return m;
+m.position.set(x,y,z);
+scene.add(m);
+return m;
 }
 
-// Kum dokusu
+function addCylinder(x,y,z,r1,r2,h,material,sides=8){
+const m=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,sides),material);
+m.position.set(x,y,z);
+scene.add(m);
+return m;
+}
+
+// Çöl zemini
 const c=document.createElement('canvas');
 c.width=256;c.height=256;
 const ctx=c.getContext('2d');
-ctx.fillStyle='#d9ad6d';ctx.fillRect(0,0,256,256);
+ctx.fillStyle='#d9ad6d';
+ctx.fillRect(0,0,256,256);
+
 for(let i=0;i<4000;i++){
 ctx.fillStyle=Math.random()>.5?'#e7c38d':'#bd9157';
 ctx.globalAlpha=.13;
 ctx.fillRect(Math.random()*256,Math.random()*256,2,2);
 }
 ctx.globalAlpha=1;
+
 const tex=new THREE.CanvasTexture(c);
 tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
 tex.repeat.set(12,12);
-const ground=new THREE.Mesh(new THREE.PlaneGeometry(240,240),new THREE.MeshStandardMaterial({map:tex,roughness:1}));
-ground.rotation.x=-Math.PI/2;ground.position.y=-.12;scene.add(ground);
 
-// Uzak kayalık dağlar
+const ground=new THREE.Mesh(
+new THREE.PlaneGeometry(240,240),
+new THREE.MeshStandardMaterial({map:tex,roughness:1})
+);
+ground.rotation.x=-Math.PI/2;
+ground.position.y=-.12;
+scene.add(ground);
+
+// Uzak dağlar
 for(let i=0;i<28;i++){
 const rock=new THREE.Mesh(
 new THREE.ConeGeometry(THREE.MathUtils.randFloat(7,15),THREE.MathUtils.randFloat(12,25),5),
@@ -105,19 +111,36 @@ scene.add(rock);
 // Piramitler
 function pyramid(x,z,size){
 const group=new THREE.Group();
-const base=new THREE.Mesh(new THREE.BoxGeometry(size*2,.7,size*2),stone);
-base.position.y=.35;group.add(base);
-const body=new THREE.Mesh(new THREE.ConeGeometry(size*1.43,size*1.55,4),lightStone);
+
+const base=new THREE.Mesh(
+new THREE.BoxGeometry(size*2,.7,size*2),stone
+);
+base.position.y=.35;
+group.add(base);
+
+const body=new THREE.Mesh(
+new THREE.ConeGeometry(size*1.43,size*1.55,4),
+lightStone
+);
 body.rotation.y=Math.PI/4;
-body.position.y=size*.775+.65;group.add(body);
+body.position.y=size*.775+.65;
+group.add(body);
+
 for(let row=0;row<9;row++){
 const y=.9+row*size*.16;
 const s=size*(1.9-row*.17);
-const layer=new THREE.Mesh(new THREE.BoxGeometry(s,.16,s),row%2?stone:lightStone);
-layer.position.y=y;group.add(layer);
+const layer=new THREE.Mesh(
+new THREE.BoxGeometry(s,.16,s),
+row%2?stone:lightStone
+);
+layer.position.y=y;
+group.add(layer);
 }
-group.position.set(x,0,z);scene.add(group);
+
+group.position.set(x,0,z);
+scene.add(group);
 }
+
 pyramid(-15,-43,13);
 pyramid(17,-50,10);
 pyramid(43,-39,6);
@@ -125,14 +148,16 @@ pyramid(43,-39,6);
 // Tapınak
 addBox(-40,1.5,-23,22,3,13,stone);
 addBox(-40,3.2,-23,24,.6,14,lightStone);
+
 for(let i=0;i<7;i++){
 const x=-49+i*3;
 addCylinder(x,3,-16,.8,.9,6,lightStone,10);
-const cap=addBox(x,6.15,-16,1.9,.5,1.9,stone);
+addBox(x,6.15,-16,1.9,.5,1.9,stone);
 }
+
 addBox(-40,4,-30,25,.8,1,stone);
 
-// Nil Nehri
+// Nil nehri
 const water=new THREE.Mesh(
 new THREE.PlaneGeometry(17,210),
 new THREE.MeshStandardMaterial({color:0x387f94,roughness:.25,metalness:.1})
@@ -141,24 +166,32 @@ water.rotation.x=-Math.PI/2;
 water.position.set(65,.03,0);
 scene.add(water);
 
-// Palmiye
+// Palmiyeler
 function palm(x,z){
 const trunk=addCylinder(x,2.4,z,.28,.48,4.8,wood,7);
 trunk.rotation.z=-.1;
+
 for(let i=0;i<8;i++){
 const angle=i*Math.PI/4;
 const leaf=new THREE.Mesh(
 new THREE.ConeGeometry(.42,4.8,5),
 green
 );
-leaf.position.set(x+Math.cos(angle)*1.7,4.8,z+Math.sin(angle)*1.7);
+leaf.position.set(
+x+Math.cos(angle)*1.7,
+4.8,
+z+Math.sin(angle)*1.7
+);
 leaf.rotation.z=Math.PI/2;
 leaf.rotation.y=-angle;
 scene.add(leaf);
 }
 addCylinder(x,4.8,z,.55,.55,.5,mat(0x547b39),7);
 }
-for(let i=0;i<22;i++)palm(52+Math.random()*14,Math.random()*130-65);
+
+for(let i=0;i<22;i++){
+palm(52+Math.random()*14,Math.random()*130-65);
+}
 
 // Kayalar
 for(let i=0;i<65;i++){
@@ -171,7 +204,7 @@ r.rotation.set(Math.random(),Math.random(),Math.random());
 scene.add(r);
 }
 
-// Oyuncu: stilize insan
+// Oyuncu
 const player=new THREE.Group();
 const skin=mat(0xa96e4b);
 const cloth=mat(0xe9d6ae);
@@ -179,115 +212,180 @@ const belt=mat(0x80502e);
 const gold=mat(0xd7a747);
 const dark=mat(0x342820);
 
-const torso=new THREE.Mesh(new THREE.CylinderGeometry(.39,.52,1.15,10),cloth);
-torso.position.y=1.5;player.add(torso);
-const head=new THREE.Mesh(new THREE.SphereGeometry(.32,12,10),skin);
-head.scale.set(.9,1.15,.9);head.position.y=2.35;player.add(head);
-const hair=new THREE.Mesh(new THREE.SphereGeometry(.34,10,8),dark);
-hair.scale.set(1, .5,1);hair.position.y=2.57;player.add(hair);
-const waist=new THREE.Mesh(new THREE.CylinderGeometry(.48,.42,.24,10),belt);
-waist.position.y=.92;player.add(waist);
+const torso=new THREE.Mesh(
+new THREE.CylinderGeometry(.39,.52,1.15,10),cloth
+);
+torso.position.y=1.5;
+player.add(torso);
+
+const head=new THREE.Mesh(
+new THREE.SphereGeometry(.32,12,10),skin
+);
+head.scale.set(.9,1.15,.9);
+head.position.y=2.35;
+player.add(head);
+
+const hair=new THREE.Mesh(
+new THREE.SphereGeometry(.34,10,8),dark
+);
+hair.scale.set(1,.5,1);
+hair.position.y=2.57;
+player.add(hair);
+
+const waist=new THREE.Mesh(
+new THREE.CylinderGeometry(.48,.42,.24,10),belt
+);
+waist.position.y=.92;
+player.add(waist);
 
 const limbs=[];
+
 function limb(x,y,z,length,r,material){
 const pivot=new THREE.Group();
 pivot.position.set(x,y,z);
-const mesh=new THREE.Mesh(new THREE.CylinderGeometry(r*.8,r,length,8),material);
-mesh.position.y=-length/2;pivot.add(mesh);
-player.add(pivot);limbs.push(pivot);return pivot;
+const mesh=new THREE.Mesh(
+new THREE.CylinderGeometry(r*.8,r,length,8),material
+);
+mesh.position.y=-length/2;
+pivot.add(mesh);
+player.add(pivot);
+limbs.push(pivot);
 }
+
 limb(-.53,1.9,0,.85,.17,skin);
 limb(.53,1.9,0,.85,.17,skin);
 limb(-.24,.82,0,.95,.2,skin);
 limb(.24,.82,0,.95,.2,skin);
 
-const sandals=mat(0x68452e);
-addBox(0,0,0,1,1,1,sandals); // küçük materyal oluşturma
 player.position.set(0,0,4);
 scene.add(player);
 
-// Başlık ve altın bilezik
-const band=new THREE.Mesh(new THREE.TorusGeometry(.29,.055,6,16),gold);
-band.position.y=2.46;band.rotation.x=Math.PI/2;player.add(band);
-const amulet=new THREE.Mesh(new THREE.BoxGeometry(.23,.28,.09),gold);
-amulet.position.set(0,1.55,.4);player.add(amulet);
+const band=new THREE.Mesh(
+new THREE.TorusGeometry(.29,.055,6,16),gold
+);
+band.position.y=2.46;
+band.rotation.x=Math.PI/2;
+player.add(band);
 
-// Kontroller
+const amulet=new THREE.Mesh(
+new THREE.BoxGeometry(.23,.28,.09),gold
+);
+amulet.position.set(0,1.55,.4);
+player.add(amulet);
+
+// Hareket kontrolü
 let joyX=0,joyY=0,angle=0,walking=false;
 const pad=document.getElementById('joy');
 const stick=document.getElementById('stick');
 let active=false;
+
 pad.addEventListener('pointerdown',e=>{
-active=true;pad.setPointerCapture(e.pointerId);move(e);
+active=true;
+pad.setPointerCapture(e.pointerId);
+moveJoy(e);
 });
-pad.addEventListener('pointermove',e=>{if(active)move(e)});
-function move(e){
+
+pad.addEventListener('pointermove',e=>{
+if(active)moveJoy(e);
+});
+
+function moveJoy(e){
 const r=pad.getBoundingClientRect();
-let x=e.clientX-r.left-60,y=e.clientY-r.top-60;
+let x=e.clientX-r.left-60;
+let y=e.clientY-r.top-60;
 const len=Math.hypot(x,y),max=37;
-if(len>max){x=x/len*max;y=y/len*max}
+
+if(len>max){
+x=x/len*max;
+y=y/len*max;
+}
+
 stick.style.transform=`translate(${x}px,${y}px)`;
-joyX=x/max;joyY=y/max;
+joyX=x/max;
+joyY=y/max;
 }
-function stop(){
-active=false;joyX=0;joyY=0;stick.style.transform='translate(0,0)';
+
+function stopJoy(){
+active=false;
+joyX=0;
+joyY=0;
+stick.style.transform='translate(0,0)';
 }
-pad.addEventListener('pointerup',stop);
-pad.addEventListener('pointercancel',stop);
+
+pad.addEventListener('pointerup',stopJoy);
+pad.addEventListener('pointercancel',stopJoy);
+
+// Kamera: sağ tarafta parmakla serbest dönüş
 const lookArea=document.getElementById('lookArea');
 let lastTouchX=null;
+let lookPointer=null;
 
 lookArea.addEventListener('pointerdown',e=>{
-  lastTouchX=e.clientX;
-  lookArea.setPointerCapture(e.pointerId);
+lookPointer=e.pointerId;
+lastTouchX=e.clientX;
+lookArea.setPointerCapture(e.pointerId);
 });
 
 lookArea.addEventListener('pointermove',e=>{
-  if(lastTouchX===null)return;
-  const dx=e.clientX-lastTouchX;
-  angle-=dx*0.008;
-  lastTouchX=e.clientX;
+if(e.pointerId!==lookPointer||lastTouchX===null)return;
+
+const dx=e.clientX-lastTouchX;
+angle-=dx*.008;
+lastTouchX=e.clientX;
 });
 
-lookArea.addEventListener('pointerup',()=>{
-  lastTouchX=null;
-});
+function stopLook(e){
+if(e.pointerId!==lookPointer)return;
+lastTouchX=null;
+lookPointer=null;
+}
 
-lookArea.addEventListener('pointercancel',()=>{
-  lastTouchX=null;
-});
+lookArea.addEventListener('pointerup',stopLook);
+lookArea.addEventListener('pointercancel',stopLook);
 
+// Oyun döngüsü
 const clock=new THREE.Clock();
+
 function animate(){
 requestAnimationFrame(animate);
+
 const dt=Math.min(clock.getDelta(),.04);
 walking=Math.abs(joyX)+Math.abs(joyY)>.12;
+
 const speed=walking?6.5:0;
 const forward=new THREE.Vector3(-Math.sin(angle),0,-Math.cos(angle));
 const right=new THREE.Vector3(Math.cos(angle),0,-Math.sin(angle));
+
 player.position.addScaledVector(forward,-joyY*speed*dt);
 player.position.addScaledVector(right,joyX*speed*dt);
+
 player.position.x=THREE.MathUtils.clamp(player.position.x,-95,95);
 player.position.z=THREE.MathUtils.clamp(player.position.z,-95,95);
+
 if(walking){
 player.rotation.y=Math.atan2(joyX,-joyY)+angle;
 const t=clock.elapsedTime*9;
+
 limbs[0].rotation.z=Math.sin(t)*.55;
 limbs[1].rotation.z=-Math.sin(t)*.55;
 limbs[2].rotation.x=Math.sin(t)*.55;
 limbs[3].rotation.x=-Math.sin(t)*.55;
 }else{
-limbs.forEach(l=>{l.rotation.set(0,0,0)});
+limbs.forEach(l=>l.rotation.set(0,0,0));
 }
+
 const target=new THREE.Vector3(
 player.position.x+Math.sin(angle)*9,
 5.3,
 player.position.z+Math.cos(angle)*9
 );
+
 camera.position.lerp(target,Math.min(1,dt*4));
 camera.lookAt(player.position.x,1.3,player.position.z);
+
 renderer.render(scene,camera);
 }
+
 animate();
 
 addEventListener('resize',()=>{
