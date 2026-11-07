@@ -1353,18 +1353,16 @@ async function loadDetailedModels(){
     clock=new THREE.Clock();
     createWorld();
     resize(); controls(); animate();
-    const startupFallback=setTimeout(()=>{
-      if(loading&&loading.isConnected){
-        loadText.textContent='Dünya açılıyor; kalan modeller arka planda yükleniyor…';
-        showGame();
-      }
-    },35000);
+    // Mobilde GLB modellerini bekleyerek oyunun açılışını kilitleme.
+    // Temel dünya hazır olduğunda oyunu hemen göster; ayrıntılı modeller arkada yüklensin.
+    showGame();
     loadDetailedModels().then(loaded=>{
-      clearTimeout(startupFallback);
-      loadText.textContent=loaded+' ayrıntılı model yüklendi.';
-      showGame();
-      if(loaded===0)toast('Ek modeller yüklenemedi; temel dünya açık.');
-    }).catch(err=>{clearTimeout(startupFallback);console.error(err);showGame();toast('Ek modeller yüklenemedi; temel oyun çalışıyor.')});
+      console.info(loaded+' ayrıntılı 3D model yüklendi.');
+      if(loaded===0)toast('Ek modeller yüklenemedi; temel dünya ile devam ediyorsun.');
+    }).catch(err=>{
+      console.error('Ek modeller yüklenemedi:',err);
+      toast('Ek modeller atlandı; temel oyun açık.');
+    });
     addEventListener('resize',resize);
     addEventListener('orientationchange',()=>setTimeout(resize,220));
     if(window.visualViewport) visualViewport.addEventListener('resize',resize);
