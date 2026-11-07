@@ -645,9 +645,7 @@ function makeTerrain(){
     sun.shadow.camera.left=-115; sun.shadow.camera.right=115;
     sun.shadow.camera.top=115; sun.shadow.camera.bottom=-115;
     scene.add(sun);
-    const floor=add(new THREE.PlaneGeometry(800,800),M.sand,0,-.18,-115);
-    floor.rotation.x=-Math.PI/2; floor.receiveShadow=true;
-
+    makeTerrain();
     // New 4.0 world pass: a dense Nile-side settlement and a monumental avenue.
     buildRiverAndFarmland();
     buildMarketQuarter();
