@@ -834,7 +834,7 @@ async function loadDetailedModels(){
         model.updateMatrixWorld(true);
         bounds=new THREE.Box3().setFromObject(model);
         const center=new THREE.Vector3();bounds.getCenter(center);
-        model.position.set(item.x-center.x,-bounds.min.y,item.z-center.z);
+        model.position.set(item.x-center.x,terrainHeight(item.x,item.z)-bounds.min.y,item.z-center.z);
         scene.add(model);
         model.updateMatrixWorld(true);
         model.traverse(o=>{
