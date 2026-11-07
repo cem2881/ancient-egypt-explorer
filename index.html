@@ -573,7 +573,67 @@ function startGame(THREE){
       }
     }
   }
+function terrainHeight(x,z){
+  const raw=1.8*Math.sin(x*.022+z*.008)
+    +1.15*Math.cos(z*.027-x*.013)
+    +.65*Math.sin((x-z)*.045);
+  const zones=[
+    [0,-20,78,105],
+    [8,-138,62,68],
+    [31,-31,52,52],
+    [106,-100,48,285],
+    [150,-245,88,72]
+  ];
+  let blend=1;
+  for(const [cx,cz,rx,rz] of zones){
+    blend=Math.min(blend,THREE.MathUtils.smoothstep(
+      Math.hypot((x-cx)/rx,(z-cz)/rz),.88,1.38
+    ));
+  }
+  return raw*blend;
+}
 
+function makeTerrain(){
+  const segments=144,size=800,half=size/2;
+  const positions=[],colors=[],indices=[];
+  const base=new THREE.Color(0xd9bd8a);
+  const light=new THREE.Color(0xe4ca99);
+
+  for(let iz=0;iz<=segments;iz++){
+    const z=-half+size*iz/segments;
+    for(let ix=0;ix<=segments;ix++){
+      const x=-half+size*ix/segments;
+      const y=terrainHeight(x,z);
+      positions.push(x,y,z);
+      const tint=.96+.035*Math.sin(x*.035+z*.018);
+      const c=base.clone().lerp(light,
+        THREE.MathUtils.clamp((y+2)/8,0,1)
+      ).multiplyScalar(tint);
+      colors.push(c.r,c.g,c.b);
+    }
+  }
+
+  for(let iz=0;iz<segments;iz++){
+    for(let ix=0;ix<segments;ix++){
+      const a=iz*(segments+1)+ix;
+      const b=a+segments+1;
+      indices.push(a,b,a+1,b,b+1,a+1);
+    }
+  }
+
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+  geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
+  geo.setIndex(indices);
+  geo.computeVertexNormals();
+
+  const ground=new THREE.Mesh(
+    geo,
+    new THREE.MeshStandardMaterial({vertexColors:true,roughness:1})
+  );
+  ground.receiveShadow=true;
+  scene.add(ground);
+}
   function createWorld(){
     scene=new THREE.Scene();
     scene.background=new THREE.Color(0x9fc6d4);
