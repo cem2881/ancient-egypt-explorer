@@ -530,18 +530,18 @@ function startGame(THREE){
  // Pale limestone road, worn paving strips and a monumental approach to the pylons.
  const roadMat=mat(0xc9b38d,.98), inset=mat(0x9e8968,.95);
  for(let i=0;i<28;i++){
- const z=8-i*5.4;
- const slab=box(13,.12,4.9,roadMat,0,-.035,z);
+ const z=-66-i*3.45;
+ const slab=box(12,.16,3.25,roadMat,Math.sin(i*.11)*.8,-.025,z);
  slab.position.x=Math.sin(i*.18)*.55;
  for(const side of [-1,1]){
- box(.16,.13,4.6,inset,side*6.2,.025,z);
+ box(.16,.13,4.6,inset,Math.sin(i*.11)*.8+side*5.65,.025,z);
  }
  }
  // Sphinx-lined avenue with plinths, carved bands and weathered standards.
- for(let i=0;i<8;i++){
- const z=-8-i*15;
+ for(let i=0;i<7;i++){
+ const z=-118-i*7.2;
  for(const side of [-1,1]){
- const x=side*13;
+ const x=side*12.5;
  makeSphinxStatue(x,z,.72,side===1?Math.PI:0);
  const pillar=cyl(.42,.58,5.8,M.sandstone,x+side*4,2.9,z,scene,12);
  cyl(.72,.62,.48,M.edgeStone,x+side*4,5.95,z,scene,12);
@@ -550,16 +550,12 @@ function startGame(THREE){
  }
  // Monumental pylons framing the near entrance, with recessed relief panels.
  for(const side of [-1,1]){
- const x=side*17;
- box(7,17,5,M.sunBrick,x,8.5,-54);
- box(7.6,.8,5.6,M.edgeStone,x,17.1,-54);
- box(5.4,11,.18,M.limestone,x,8.3,-51.42);
- for(let k=0;k<6;k++){
- box(4.6,.13,.1,M.gold,x,4.1+k*1.5,-51.28);
- }
- box(1.2,19,1.1,M.darkStone,x-side*4,9.5,-54);
- const cap=add(new THREE.ConeGeometry(.9,1.8,4),M.gold,x-side*4,20,-54);cap.rotation.y=Math.PI/4;
- registerBoxCollider(x,-54,7.5,5.8,19);
+ const x=side*18;
+ box(8,17,6,M.sunBrick,x,8.5,-158);
+ box(8.6,.8,6.6,M.edgeStone,x,17.1,-158);
+ box(6,11,.18,M.limestone,x,8.3,-154.88);
+ for(let k=0;k<6;k++) box(5,.13,.1,M.gold,x,4.1+k*1.5,-154.75);
+ registerBoxCollider(x,-158,8.5,6.8,19);
  }
  }
 
@@ -940,7 +936,7 @@ function makeTerrain(){
  const tail=add(new THREE.ConeGeometry(.2,.72,5),mat(0x493729),-.55,-.02,0,scoutBird);tail.rotation.z=Math.PI/2;
  scoutBird.visible=false;scene.add(scoutBird);
  // Six relics on pedestals
- const positions=[[-74,-56],[-40,21],[15,-61],[55,-108],[99,-50],[122,-132]];
+ const positions=[[-62,-42],[76,-24],[54,-92],[-112,-214],[145,-132],[-24,-146]];
  positions.forEach(([x,z],i)=>{
  const group=new THREE.Group(); scene.add(group);
  cyl(.58,.76,.26,M.darkStone,0,.13,0,group,10);
@@ -955,7 +951,7 @@ function makeTerrain(){
  const marker=new THREE.Group(); scene.add(marker);
  cyl(.13,.13,3.2,M.gold,0,1.6,0,marker,8);
  const halo=add(new THREE.TorusGeometry(1.5,.09,8,32),M.gold,0,.12,0,marker);
- halo.rotation.x=Math.PI/2; marker.position.set(8,0,-132);
+ halo.rotation.x=Math.PI/2; marker.position.set(8,0,-176);
  marker.userData.halo=halo;
  }
 
@@ -974,10 +970,10 @@ async function loadDetailedModels(){
  {url:repoBase+'desert-animals-set.glb',x:57,z:30,size:15},
  {url:repoBase+'desert-camel-caravan.glb',x:-78,z:42,size:22},
  {url:repoBase+'desert-oasis-camp.glb',x:44,z:-44,size:18},
- {url:repoBase+'desert-tomb-entrance.glb',x:112,z:-78,size:18},
- {url:repoBase+'desert-step-pyramid.glb',x:-128,z:-115,size:36},
- {url:repoBase+'great-sandstone-sphinx.glb',x:-42,z:-152,size:19},
- {url:repoBase+'royal-desert-sarcophagus.glb',x:128,z:-92,size:7},
+ {url:repoBase+'desert-tomb-entrance.glb',x:-111,z:-211,size:18},
+ {url:repoBase+'desert-step-pyramid.glb',x:-151,z:-247,size:40},
+ {url:repoBase+'great-sandstone-sphinx.glb',x:-112,z:-183,size:19},
+ {url:repoBase+'royal-desert-sarcophagus.glb',x:-128,z:-220,size:7},
  {url:templeBase+'TempleFloor01_Art.glb',x:8,z:-138,size:26},
  {url:templeBase+'TempleFloor02_Art.glb',x:8,z:-111,size:24},
  {url:templeBase+'TempleFloor03_Art.glb',x:34,z:-138,size:24},
@@ -996,7 +992,7 @@ async function loadDetailedModels(){
  {url:templeBase+'FireTorch01_Art.glb',x:17,z:-153,size:5},
  {url:templeBase+'Jar01_Art.glb',x:-2,z:-130,size:3},
  {url:templeBase+'Jar02_Art.glb',x:18,z:-130,size:3},
- {url:templeBase+'Trap_Art.glb',x:65,z:-85,size:8}
+ {url:templeBase+'Trap_Art.glb',x:-111,z:-220,size:8}
  ];
  let loaded=0,failed=0,nextIndex=0;
  async function worker(){
@@ -1084,7 +1080,7 @@ async function loadDetailedModels(){
  } else toast(`Kutsal eser bulundu — ${found}/6`);
  return;
  }
- if(found===6 && player.position.distanceTo(new THREE.Vector3(8,0,-132))<13){
+ if(found===6 && player.position.distanceTo(new THREE.Vector3(8,0,-176))<13){
  gameWon=true;
  $('missionLabel').textContent='GÖREV TAMAMLANDI';
  $('mission').textContent='Medjay kayıp eserleri korudu. Mısır’ın sırları yeniden güvende.';
