@@ -776,50 +776,45 @@ function startGame(THREE){
  }
 
 function terrainHeight(x,z){
- // Broad, walkable Nile basin with elevated sandstone escarpments and a raised royal plateau.
- const raw=1.15*Math.sin(x*.022+z*.008)
- +.78*Math.cos(z*.027-x*.013)
- +.42*Math.sin((x-z)*.045);
+ // Main playable valley remains gently graded; real mountain masses rise around its edges.
+ const raw=0.42*Math.sin(x*.018+z*.009)+0.34*Math.cos(z*.021-x*.012);
  const zones=[
- [0,-20,78,105],
- [84.7,-196.1,78,78],
- [36,-110,75,100],
- [31,-31,52,52],
- [-62,-100,48,285],
- [-132,20,60,135],
- [-119,91,32,32],
- [170,-285,48,48]
+  [0,-20,82,108],[84.7,-196.1,78,82],[36,-110,78,105],[31,-31,56,58],
+  [-66,-100,48,290],[-132,20,62,145],[-119,91,36,36],[170,-285,58,60]
  ];
- let flatten=1;
+ let flat=1;
  for(const [cx,cz,rx,rz] of zones){
-   flatten=Math.min(flatten,THREE.MathUtils.smoothstep(
-     Math.hypot((x-cx)/rx,(z-cz)/rz),.82,1.42
-   ));
+  flat=Math.min(flat,THREE.MathUtils.smoothstep(
+   Math.hypot((x-cx)/rx,(z-cz)/rz),.78,1.36));
  }
  const ridge=(d,w,h)=>h*Math.exp(-Math.pow(d/w,2));
- const westLine=-194+18*Math.sin(z*.018)+8*Math.sin(z*.047);
- const eastLine=202+19*Math.sin(z*.021+1.2)+7*Math.sin(z*.052);
- const outside=1-flatten;
- let relief=0;
- // Long, broken mountain walls frame the valley instead of a flat rectangular edge.
- relief+=ridge(x-westLine,35,25)*THREE.MathUtils.smoothstep((142-z)/45,0,1);
- relief+=ridge(x-eastLine,40,30)*THREE.MathUtils.smoothstep((142-z)/42,0,1);
- relief+=ridge(z+365,43,25)*THREE.MathUtils.smoothstep((Math.abs(x)-85)/45,0,1);
- relief+=ridge(Math.hypot((x+230)/1.05,(z+185)/1.25),35,20);
- relief+=ridge(Math.hypot((x-226)/1.05,(z+70)/1.2),39,22);
- // The royal necropolis occupies a distinct, gently sloped sandstone plateau.
- const pyramidDist=Math.hypot((x-170)/92,(z+285)/76);
- const pyramidPlateau=8*(1-THREE.MathUtils.smoothstep(pyramidDist,.72,1.22));
- // Low undulating shoulders create natural transitions from the valley to the cliffs.
- const knolls=(ridge(Math.hypot(x+150,z+35),28,8)
-   +ridge(Math.hypot(x-145,z-5),32,9)
-   +ridge(Math.hypot(x-150,z+235),35,11));
- return raw*flatten + relief*outside + knolls*outside + pyramidPlateau;
+ const westLine=-190+15*Math.sin(z*.014)+9*Math.sin(z*.037);
+ const eastLine=194+17*Math.sin(z*.016+1.1)+8*Math.sin(z*.041);
+ const northLine=-365+12*Math.sin(x*.018);
+ let mountains=0;
+ mountains+=ridge(x-westLine,48,62)*THREE.MathUtils.smoothstep((150-z)/55,0,1);
+ mountains+=ridge(x-eastLine,52,72)*THREE.MathUtils.smoothstep((150-z)/52,0,1);
+ mountains+=ridge(z-northLine,48,54)*THREE.MathUtils.smoothstep((Math.abs(x)-75)/50,0,1);
+ // Separate peaks and saddles break the escarpments into believable rocky ranges.
+ for(const [px,pz,rx,rz,h] of [
+  [-214,-70,30,48,24],[-203,-180,42,58,32],[-176,-292,35,48,27],
+  [210,-55,38,52,29],[218,-168,44,62,34],[178,-310,42,48,26],
+  [-135,-365,50,38,18],[135,-370,55,42,22]
+ ]){
+  mountains+=h*Math.exp(-(((x-px)/rx)**2+((z-pz)/rz)**2));
+ }
+ const plateau=9*(1-THREE.MathUtils.smoothstep(
+  Math.hypot((x-170)/95,(z+285)/82),.68,1.22));
+ const rough=(Math.sin(x*.11+z*.07)*Math.sin(z*.13-x*.05))*2.1;
+ // Carve the river channel below the water plane so banks cannot cover the Nile ribbon.
+ const riverX=-66+Math.sin(z*.024)*21+Math.sin(z*.008)*10+Math.sin(z*.061)*3.5;
+ const riverCut=2.0*Math.exp(-Math.pow((x-riverX)/18,4));
+ return raw*flat + mountains*(1-flat) + plateau + rough*(1-flat) - riverCut;
 }
 
 
 function makeTerrain(){
- const segments=200,size=800,half=size/2;
+ const segments=320,size=800,half=size/2;
  const positions=[],colors=[],indices=[];
  const base=new THREE.Color(0xd9bd8a);
  const light=new THREE.Color(0xe4ca99);
@@ -901,51 +896,20 @@ function makeTerrain(){
  buildProcessionalAvenue();
  scatterVillageGround();
 
- for(let i=0;i<50;i++){
- const d=sphere(1, [M.sand,M.paleSand,M.sandstone][i%3],
- (Math.random()-.5)*420,-2.6,-30-Math.random()*360,scene,12);
- d.scale.set(15+Math.random()*30,2.3+Math.random()*4.8,10+Math.random()*24);
- }
- // Sculpted dune ridges frame the playable valley without blocking the main routes.
- [
- [-160,-42,42,30,18,1],[-172,-102,45,29,17,2],[-190,-165,58,42,24,3],
- [112,-42,48,32,18,4],[178,-118,52,35,21,5],[190,-205,68,48,27,6],
- [205,-265,58,44,19,7],[235,-310,70,48,21,8],[-142,85,42,27,10,9],
- [-105,95,48,30,11,10],[-235,-65,52,34,14,11],[235,-150,58,40,17,12]
- ].forEach(v=>makeDune(...v));
- // Layered sandstone escarpments and broken mesas make the horizon feel mountainous.
+ // Mountain silhouettes are sculpted into the terrain mesh; avoid floating decorative mounds.
  const cliffMat=mat(0x987b58), cliffLight=mat(0xb5966d), darkRock=mat(0x766047);
- const mesas=[[-190,-8,23,19,17],[-205,-118,28,22,24],[205,-72,25,18,20],[198,-230,31,24,28],[168,-330,34,27,31],[212,-345,38,26,34],[-142,112,24,17,15],[-102,120,27,20,17]];
- mesas.forEach(([x,z,w,d,h],idx)=>{
- const base=add(new THREE.DodecahedronGeometry(1,1),cliffMat,x,h*.35,z);
- base.scale.set(w,h*.72,d); base.rotation.y=idx*.63; base.rotation.z=.08;
- const cap=add(new THREE.DodecahedronGeometry(1,0),cliffLight,x+3,h*.82,z-2);
- cap.scale.set(w*.72,h*.42,d*.78); cap.rotation.y=idx*.41;
- for(let k=0;k<5;k++){
- const shard=add(new THREE.ConeGeometry(2+Math.random()*2,5+Math.random()*9,5),darkRock,
- x+(Math.random()-.5)*w*1.2,2+Math.random()*4,z+(Math.random()-.5)*d*1.2);
- shard.rotation.z=(Math.random()-.5)*.24; shard.rotation.x=(Math.random()-.5)*.2;
- }
- });
- // Scattered angular boulders around the valley floor.
- for(let i=0;i<58;i++){
- const x=(Math.random()-.5)*300,z=35-Math.random()*340;
- if(Math.abs(x)<27 && z>-5) continue;
- const b=add(new THREE.DodecahedronGeometry(.8,0),i%3?darkRock:cliffLight,x,.55+Math.random()*1.2,z);
- b.scale.set(1+Math.random()*2,.7+Math.random()*1.8,1+Math.random()*2);b.rotation.set(Math.random(),Math.random()*3,Math.random());
- }
- // Wind-carved smaller ridges and stone outcrops.
+ // Small grounded outcrops only at the foot of the escarpments.
  for(let i=0;i<34;i++){
- const x=(Math.random()-.5)*340,z=-25-Math.random()*300;
- const rock=sphere(.8,M.edgeStone,x,.25,z,scene,9);
- rock.scale.set(1.5+Math.random()*2,.55+Math.random()*.6,1+Math.random()*2);
- rock.rotation.y=Math.random()*Math.PI;
+   const side=i%2===0?-1:1;
+   const z=105-Math.random()*390;
+   const x=side*(155+Math.random()*34);
+   const y=terrainHeight(x,z);
+   const b=add(new THREE.DodecahedronGeometry(.8,0),i%3?darkRock:cliffLight,x,y+.45,z);
+   b.scale.set(1.8+Math.random()*2,.8+Math.random()*1.3,1.6+Math.random()*2);
+   b.rotation.set(Math.random()*.25,Math.random()*3,Math.random()*.18);
  }
  // Detailed pyramid GLBs replace the old low-poly placeholder pyramids.
  // Royal necropolis: three monumental pyramids on the eastern desert plateau.
- pyramid(138,-302,27,0xc4a477);
- pyramid(182,-325,21,0xb99768);
- pyramid(204,-282,15,0xcbb184);
 
 
  // Village and market architecture are supplied by detailed GLB assets.
@@ -1027,7 +991,7 @@ function makeTerrain(){
  const marker=new THREE.Group(); scene.add(marker);
  cyl(.13,.13,3.2,M.gold,0,1.6,0,marker,8);
  const halo=add(new THREE.TorusGeometry(1.5,.09,8,32),M.gold,0,.12,0,marker);
- halo.rotation.x=Math.PI/2; marker.position.set(TEMPLE_FRONT.x,0,TEMPLE_FRONT.z);
+ halo.rotation.x=Math.PI/2; marker.position.set(TEMPLE_FRONT.x,terrainHeight(TEMPLE_FRONT.x,TEMPLE_FRONT.z),TEMPLE_FRONT.z);
  marker.userData.halo=halo;
  }
 
@@ -1093,7 +1057,18 @@ async function loadDetailedModels(){
  {url:templeBase+'Door_Art.glb',x:0,z:-226,size:13},
  {url:templeBase+'FireTorch02_Art.glb',x:-20,z:-205,size:4},
  {url:templeBase+'FireTorch03_Art.glb',x:20,z:-205,size:4},
- {url:templeBase+'InteriorEmbelisher01_Art.glb',x:-8,z:-213,size:7}
+ {url:templeBase+'InteriorEmbelisher01_Art.glb',x:-8,z:-213,size:7},
+ // Clearly visible CC0 palm-tree props placed along the Nile and the ceremonial approach.
+ {url:templeBase+'PalmTree_Art.glb',x:-91,z:82,size:11},
+ {url:templeBase+'PalmTree_Art.glb',x:-104,z:48,size:11},
+ {url:templeBase+'PalmTree_Art.glb',x:-88,z:4,size:10},
+ {url:templeBase+'PalmTree_Art.glb',x:-105,z:-42,size:10},
+ {url:templeBase+'PalmTree_Art.glb',x:-91,z:-93,size:10},
+ {url:templeBase+'PalmTree_Art.glb',x:-103,z:-145,size:10},
+ {url:templeBase+'PalmTree_Art.glb',x:104,z:-151,size:10},
+ {url:templeBase+'PalmTree_Art.glb',x:121,z:-181,size:10},
+ {url:templeBase+'PalmTree_Art.glb',x:48,z:-127,size:9},
+ {url:templeBase+'PalmTree_Art.glb',x:-24,z:-103,size:9}
  ];
  // Convert the temple kit's local layout into the eastern temple precinct; rotate its front toward the village.
  for(const item of assets){
@@ -1112,7 +1087,7 @@ async function loadDetailedModels(){
      try{
        const gltf=await Promise.race([
          loader.loadAsync(item.url),
-         new Promise((_,reject)=>setTimeout(()=>reject(new Error('Model zaman aşımına uğradı')),12000))
+         new Promise((_,reject)=>setTimeout(()=>reject(new Error('Model zaman aşımına uğradı')),22000))
        ]);
        const model=gltf.scene;
        model.rotation.y=item.rotation||0;
@@ -1150,7 +1125,7 @@ async function loadDetailedModels(){
    }
  }
  const mobileMode=window.matchMedia?.('(max-width: 900px)').matches || (navigator.hardwareConcurrency||4)<=4;
- await Promise.all(Array.from({length:Math.min(mobileMode?2:3,assets.length)},()=>worker()));
+ await Promise.all(Array.from({length:Math.min(mobileMode?3:4,assets.length)},()=>worker()));
  if(failed)console.warn(`${failed} / ${assets.length} GLB modeli yüklenemedi.`);
  if(loaded)toast(`${loaded} / ${assets.length} 3D model yüklendi${failed?` · ${failed} model atlandı`:''}.`);
  else toast('3D modeller yüklenemedi; temel dünya açık.');
