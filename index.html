@@ -993,20 +993,19 @@ async function loadDetailedModels(){
       player.userData.forearms.forEach(a=>a.rotation.x=THREE.MathUtils.damp(a.rotation.x,-.18,10,dt));
       player.position.y=grounded?THREE.MathUtils.damp(player.position.y,Math.sin(t*2.1)*.018,5,dt):player.position.y;
       cameraShake=THREE.MathUtils.damp(cameraShake,0,6,dt);
-    }
-    if(grounded){
+      if(grounded){
     player.position.y=terrainHeight(player.position.x,player.position.z);
-    }
-    if(!grounded){
-      player.position.y+=jumpVelocity*dt;
-      jumpVelocity-=18*dt;
-      const groundY=terrainHeight(player.position.x,player.position.z);
-if(player.position.y<=groundY){
-  player.position.y=groundY;
-  jumpVelocity=0;
-  grounded=true;
 }
+   if(!grounded){
+    player.position.y+=jumpVelocity*dt;
+    jumpVelocity-=18*dt;
+    const groundY=terrainHeight(player.position.x,player.position.z);
+    if(player.position.y<=groundY){
+        player.position.y=groundY;
+        jumpVelocity=0;
+        grounded=true;
     }
+}
     player.position.x=THREE.MathUtils.clamp(player.position.x,-220,220);
     player.position.z=THREE.MathUtils.clamp(player.position.z,-360,100);
     if(scouting){
