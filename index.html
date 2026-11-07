@@ -527,35 +527,39 @@ function startGame(THREE){
 
 
  function buildProcessionalAvenue(){
- // Pale limestone road, worn paving strips and a monumental approach to the pylons.
- const roadMat=mat(0xc9b38d,.98), inset=mat(0x9e8968,.95);
- for(let i=0;i<28;i++){
- const z=-66-i*3.45;
- const slab=box(12,.16,3.25,roadMat,Math.sin(i*.11)*.8,-.025,z);
- slab.position.x=Math.sin(i*.18)*.55;
+ // A broad, straight ceremonial axis links the market gate to the temple precinct.
+ const roadMat=mat(0xd2bd98,.96), edgeMat=mat(0x8e795c,.98), plazaMat=mat(0xc4ad84,.98);
+ // Main avenue: double stone borders and regularly spaced paving slabs.
+ for(let i=0;i<31;i++){
+   const z=-57-i*3.05, curve=Math.sin(i*.075)*.28;
+   box(17,.2,2.86,roadMat,curve,-.015,z);
+   for(const side of [-1,1]) box(.34,.24,3.05,edgeMat,curve+side*8.25,.015,z);
+   if(i%3===0) box(15,.035,.12,M.limestone,curve,-.0,z-1.35);
+ }
+ // Forecourt before the temple: a large paved square with low perimeter curbs.
+ box(58,.22,35,plazaMat,0,.015,-151);
  for(const side of [-1,1]){
- box(.16,.13,4.6,inset,Math.sin(i*.11)*.8+side*5.65,.025,z);
+   box(1,.7,35,M.edgeStone,side*29,.35,-151);
+   for(let j=0;j<5;j++){
+     const z=-137-j*6.8;
+     box(2.8,.5,2.8,M.darkStone,side*24,.25,z);
+     makeSphinxStatue(side*24,z,.62,side===1?Math.PI:0);
+   }
  }
- }
- // Sphinx-lined avenue with plinths, carved bands and weathered standards.
- for(let i=0;i<7;i++){
- const z=-118-i*7.2;
+ // Entrance pylons set at the far edge of the forecourt, leaving a clear central opening.
  for(const side of [-1,1]){
- const x=side*12.5;
- makeSphinxStatue(x,z,.72,side===1?Math.PI:0);
- const pillar=cyl(.42,.58,5.8,M.sandstone,x+side*4,2.9,z,scene,12);
- cyl(.72,.62,.48,M.edgeStone,x+side*4,5.95,z,scene,12);
- for(let k=0;k<4;k++)box(.9,.11,.9,M.gold,x+side*4,1.1+k*1.25,z);
+   const x=side*17.5;
+   box(9,18,7.5,M.sunBrick,x,9,-169);
+   box(9.8,.9,8.1,M.edgeStone,x,18.35,-169);
+   box(6.8,12,.22,M.limestone,x,8.7,-165.1);
+   for(let k=0;k<7;k++) box(5.8,.14,.12,M.gold,x,4.2+k*1.55,-164.9);
+   registerBoxCollider(x,-169,9.5,8,20);
  }
- }
- // Monumental pylons framing the near entrance, with recessed relief panels.
+ // Obelisks mark the approach without obstructing the walking lane.
  for(const side of [-1,1]){
- const x=side*18;
- box(8,17,6,M.sunBrick,x,8.5,-158);
- box(8.6,.8,6.6,M.edgeStone,x,17.1,-158);
- box(6,11,.18,M.limestone,x,8.3,-154.88);
- for(let k=0;k<6;k++) box(5,.13,.1,M.gold,x,4.1+k*1.5,-154.75);
- registerBoxCollider(x,-158,8.5,6.8,19);
+   const x=side*13.8,z=-127;
+   const ob=add(new THREE.CylinderGeometry(.38,.68,13,4),M.gold,x,6.5,z); ob.rotation.y=Math.PI/4;
+   const tip=add(new THREE.ConeGeometry(.52,1.6,4),M.gold,x,13.8,z); tip.rotation.y=Math.PI/4;
  }
  }
 
@@ -568,7 +572,7 @@ function startGame(THREE){
  });
  const shallowMat=new THREE.MeshStandardMaterial({color:0x789b83,roughness:.9,side:THREE.DoubleSide});
  const wetMat=new THREE.MeshStandardMaterial({color:0xb39a70,roughness:1,side:THREE.DoubleSide});
- const centerAt=z=>106+Math.sin(z*.024)*15+Math.sin(z*.008)*8;
+ const centerAt=z=>-62+Math.sin(z*.024)*12+Math.sin(z*.008)*6;
  const widthAt=z=>15.5+Math.sin(z*.031)*2.2;
  const samples=[];
  for(let z=142;z>=-350;z-=5.5) samples.push({x:centerAt(z),z});
@@ -635,7 +639,7 @@ function startGame(THREE){
  // Irrigated fields and date groves on the fertile western floodplain.
  const fieldMat=mat(0x8b8752,.98),furrowMat=mat(0x665f39,.98);
  for(let i=0;i<12;i++){
- const x=49+(i%3)*15,z=91-Math.floor(i/3)*49;
+ const x=-119-(i%3)*15,z=91-Math.floor(i/3)*49;
  const plot=box(12,.07,22,fieldMat,x,-.07,z);
  for(let row=0;row<5;row++){
  const furrow=box(10,.025,.09,furrowMat,x,-.025,z-8+row*4);
@@ -651,8 +655,8 @@ function startGame(THREE){
  }
  // Palm trees follow the fertile riverbank in loose clusters.
  for(let i=0;i<28;i++){
- const z=119-i*16.2,cx=centerAt(z),side=i%4===0?1:-1;
- const x=cx-side*(widthAt(z)+13+(i%3)*2);
+ const z=119-i*16.2,cx=centerAt(z),side=i%4===0?-1:1;
+ const x=cx+side*(widthAt(z)+13+(i%3)*2);
  palm(x,z+Math.sin(i*1.9)*3);
  }
  // Three stone causeways connect the settlement to the eastern riverbank.
@@ -688,43 +692,52 @@ function startGame(THREE){
 
 
  function buildMarketQuarter(){
- // Compact, lived-in streets flank the processional road; keep the center lane open.
+ // Residential quarter arranged around two narrow lanes; the ceremonial avenue stays unobstructed.
  const placements=[
- [-24,7,10,8,5,0],[-40,-8,12,9,5.8,1],[-25,-28,9,8,4.8,2],
- [-48,-39,13,10,6,0],[-29,-62,11,9,5.2,1],
- [25,8,10,8,5,1],[42,-10,12,9,5.8,2],[27,-31,9,8,4.8,0],
- [49,-43,13,10,6,1],[29,-65,11,9,5.2,2]
+ [-27,13,11,9,5.4,0],[-45,0,12,10,5.8,1],[-27,-12,10,9,5.1,2],[-48,-25,13,10,6,0],[-27,-43,11,9,5.3,1],[-47,-55,12,9,5.6,2],
+ [27,13,11,9,5.4,1],[45,0,12,10,5.8,2],[27,-12,10,9,5.1,0],[48,-25,13,10,6,1],[27,-43,11,9,5.3,2],[47,-55,12,9,5.6,0]
  ];
  placements.forEach(v=>makeTownHouse(...v));
- // Wall-mounted oil lamps illuminate the lanes after sunset.
- for(const [x,z] of [[-24,7],[-40,-8],[-25,-28],[25,8],[42,-10],[27,-31]]){
-   const lamp=add(new THREE.SphereGeometry(.13,8,6),M.gold,x,3.2,z,scene);
-   const glow=new THREE.PointLight(0xffb45c,0,12,2);glow.position.set(x,3.1,z);scene.add(glow);nightLights.push(glow);
+ // A defined market square with a central well and shaded vendor stalls.
+ box(42,.18,27,M.darkStone,0,.05,-28);
+ box(39,.12,24,M.sandstone,0,.17,-28);
+ cyl(2.2,2.5,.55,M.edgeStone,0,.48,-28,scene,12);
+ cyl(1.55,1.75,.18,M.water,0,.82,-28,scene,16);
+ for(let i=0;i<8;i++){
+   const a=i*Math.PI/4,x=Math.cos(a)*3.2,z=-28+Math.sin(a)*3.2;
+   cyl(.13,.16,1.6,M.leather,x,.8,z,scene,7);
  }
- // Cloth-covered merchant stalls, woven rugs, amphorae and stacked produce.
- for(let i=0;i<7;i++){
- const side=i%2?1:-1,x=side*(17+(i%3)*7),z=17-Math.floor(i/2)*17;
- const w=5.5;
- box(w,.22,4.4,M.darkStone,x,.12,z);
- for(const dx of [-2.3,2.3])for(const dz of [-1.7,1.7])cyl(.07,.09,3.1,M.leather,x+dx,1.55,z+dz,scene,7);
- const awning=box(6,.15,4.8,i%2?M.shadeBlue:M.shadeRed,x,3.15,z);
- awning.rotation.z=.08;
- for(let p=0;p<4;p++){
- const basket=cyl(.28,.36,.45,p%2?M.sunBrick:M.edgeStone,x-1.8+p*1.2,.55,z+.2,scene,8);
- sphere(.16,M.green,x-1.8+p*1.2,.86,z+.2,scene,8);
+ // Cloth-covered stalls face the square from both sides.
+ for(let i=0;i<8;i++){
+   const side=i%2?1:-1, row=Math.floor(i/2), x=side*(14+row%2*3), z=3-row*15;
+   box(6.2,.24,4.8,M.darkStone,x,.14,z);
+   for(const dx of [-2.55,2.55])for(const dz of [-1.9,1.9]) cyl(.08,.1,3.1,M.leather,x+dx,1.55,z+dz,scene,7);
+   const awning=box(7,.18,5.5,i%3===0?M.shadeRed:(i%3===1?M.shadeBlue:M.linen),x,3.18,z); awning.rotation.z=side*.025;
+   for(let j=0;j<4;j++){
+     const bx=x-2.1+j*1.35;
+     cyl(.28,.34,.5,j%2?M.sunBrick:M.edgeStone,bx,.53,z+.25,scene,8);
+     sphere(.16,M.green,bx,.88,z+.25,scene,8);
+   }
+   registerBoxCollider(x,z,6.5,5,3.5);
  }
- registerBoxCollider(x,z,5.5,4.5,3.4);
- }
- // Boundary walls, gate niches and sun-baked crenellations.
+ // Low adobe perimeter wall, with a wide southern gate and regularly spaced buttresses.
  for(const side of [-1,1]){
- for(let i=0;i<7;i++){
- const z=25-i*17,x=side*57;
- box(1.2,3.8,16,M.sunBrick,x,1.9,z);
- for(let k=0;k<4;k++)box(1.5,.7,1.4,M.limestone,x,4.1,z-6+k*4);
- registerBoxCollider(x,z,1.6,16.4,4.5);
+   for(let i=0;i<6;i++){
+     const z=19-i*14.5,x=side*61;
+     box(1.35,4.2,13.8,M.sunBrick,x,2.1,z);
+     box(1.8,.65,1.8,M.limestone,x,4.35,z-5.2);
+     registerBoxCollider(x,z,1.7,14,4.8);
+   }
+ }
+ // Street lamps and pottery clusters make the residential lanes legible at ground level.
+ for(const [x,z] of [[-21,4],[-52,-9],[-21,-34],[21,4],[52,-9],[21,-34]]){
+   cyl(.12,.16,3.2,M.leather,x,1.6,z,scene,8);
+   const lamp=sphere(.18,M.gold,x,3.25,z,scene,8);
+   const glow=new THREE.PointLight(0xffb45c,0,13,2);glow.position.set(x,3.2,z);scene.add(glow);nightLights.push(glow);
+   jar(x+2,z+2,0x93613b);
  }
  }
- }
+
 function terrainHeight(x,z){
  const raw=1.8*Math.sin(x*.022+z*.008)
  +1.15*Math.cos(z*.027-x*.013)
@@ -733,8 +746,8 @@ function terrainHeight(x,z){
  [0,-20,78,105],
  [8,-138,62,68],
  [31,-31,52,52],
- [106,-100,48,285],
- [150,-245,88,72]
+ [-62,-100,48,285],
+ [170,-285,105,92]
  ];
  let blend=1;
  for(const [cx,cz,rx,rz] of zones){
@@ -823,7 +836,7 @@ function makeTerrain(){
  sun.shadow.camera.top=115; sun.shadow.camera.bottom=-115;
  scene.add(sun);
  makeTerrain();
- // New 4.0 world pass: a dense Nile-side settlement and a monumental avenue.
+ // 5.0 world layout: Nile and irrigated west bank, central settlement, eastern temple and royal necropolis.
  buildRiverAndFarmland();
  buildMarketQuarter();
  buildProcessionalAvenue();
@@ -836,14 +849,14 @@ function makeTerrain(){
  }
  // Sculpted dune ridges frame the playable valley without blocking the main routes.
  [
- [-112,-42,42,30,18,1],[-132,-102,45,29,17,2],[-178,-165,58,42,24,3],
- [125,-42,48,32,18,4],[174,-118,52,35,21,5],[145,-205,68,48,27,6],
- [-205,-265,58,44,19,7],[205,-310,70,48,21,8],[-92,85,42,27,10,9],
- [100,95,48,30,11,10],[-235,-65,52,34,14,11],[235,-150,58,40,17,12]
+ [-160,-42,42,30,18,1],[-172,-102,45,29,17,2],[-190,-165,58,42,24,3],
+ [112,-42,48,32,18,4],[178,-118,52,35,21,5],[190,-205,68,48,27,6],
+ [205,-265,58,44,19,7],[235,-310,70,48,21,8],[-142,85,42,27,10,9],
+ [-105,95,48,30,11,10],[-235,-65,52,34,14,11],[235,-150,58,40,17,12]
  ].forEach(v=>makeDune(...v));
  // Layered sandstone escarpments and broken mesas make the horizon feel mountainous.
  const cliffMat=mat(0x987b58), cliffLight=mat(0xb5966d), darkRock=mat(0x766047);
- const mesas=[[-190,-8,23,19,17],[-205,-118,28,22,24],[205,-72,25,18,20],[198,-230,31,24,28],[-168,-330,34,27,31],[172,-345,38,26,34],[-72,112,24,17,15],[112,120,27,20,17]];
+ const mesas=[[-190,-8,23,19,17],[-205,-118,28,22,24],[205,-72,25,18,20],[198,-230,31,24,28],[168,-330,34,27,31],[212,-345,38,26,34],[-142,112,24,17,15],[-102,120,27,20,17]];
  mesas.forEach(([x,z,w,d,h],idx)=>{
  const base=add(new THREE.DodecahedronGeometry(1,1),cliffMat,x,h*.35,z);
  base.scale.set(w,h*.72,d); base.rotation.y=idx*.63; base.rotation.z=.08;
@@ -870,15 +883,19 @@ function makeTerrain(){
  rock.rotation.y=Math.random()*Math.PI;
  }
  // Detailed pyramid GLBs replace the old low-poly placeholder pyramids.
+ // Royal necropolis: three monumental pyramids on the eastern desert plateau.
+ pyramid(128,-302,27,0xc4a477);
+ pyramid(190,-325,21,0xb99768);
+ pyramid(228,-282,15,0xcbb184);
 
 
  // Village and market architecture are supplied by detailed GLB assets.
  // Oasis pool and palms
- const water=add(new THREE.CircleGeometry(14,48),M.water,31,.03,-31);
+ const water=add(new THREE.CircleGeometry(14,48),M.water,-119,.03,91);
  water.rotation.x=-Math.PI/2;
  for(let i=0;i<11;i++){
  const a=i*Math.PI*2/11;
- palm(31+Math.cos(a)*18,-31+Math.sin(a)*18);
+ palm(-119+Math.cos(a)*18,91+Math.sin(a)*18);
  }
  // Karnak temple and sphinx avenue
  // Karnak, sphinxes and monumental gates are rendered by the detailed GLB set.
@@ -902,12 +919,12 @@ function makeTerrain(){
  // Mixed village livestock and domestic animals around the market, farms and oasis.
  const animalPlan=[
    ...Array.from({length:5},(_,i)=>({type:'goat',x:23+(i%3)*3.2,z:-22-Math.floor(i/3)*5})),
-   ...Array.from({length:3},(_,i)=>({type:'sheep',x:48+(i%2)*3.5,z:20-Math.floor(i/2)*5})),
-   {type:'cow',x:67,z:62},{type:'cow',x:72,z:68},
-   {type:'camel',x:-65,z:28},{type:'camel',x:-71,z:32},
-   {type:'horse',x:-59,z:35},
+   ...Array.from({length:3},(_,i)=>({type:'sheep',x:-100+(i%2)*3.5,z:20-Math.floor(i/2)*5})),
+   {type:'cow',x:-91,z:62},{type:'cow',x:-86,z:68},
+   {type:'camel',x:69,z:28},{type:'camel',x:75,z:32},
+   {type:'horse',x:83,z:35},
    {type:'cat',x:-18,z:2},{type:'cat',x:34,z:-12},{type:'cat',x:44,z:-36},
-   {type:'dog',x:-34,z:-18},{type:'dog',x:18,z:-42},{type:'dog',x:56,z:6}
+   {type:'dog',x:-34,z:-18},{type:'dog',x:18,z:-42},{type:'dog',x:-55,z:6}
  ];
  animalPlan.forEach((item,i)=>{
    const animal=makeAnimal(item.type,i);
@@ -936,7 +953,7 @@ function makeTerrain(){
  const tail=add(new THREE.ConeGeometry(.2,.72,5),mat(0x493729),-.55,-.02,0,scoutBird);tail.rotation.z=Math.PI/2;
  scoutBird.visible=false;scene.add(scoutBird);
  // Six relics on pedestals
- const positions=[[-62,-42],[76,-24],[54,-92],[-112,-214],[145,-132],[-24,-146]];
+ const positions=[[-104,28],[76,-24],[54,-92],[132,-235],[145,-132],[8,-220]];
  positions.forEach(([x,z],i)=>{
  const group=new THREE.Group(); scene.add(group);
  cyl(.58,.76,.26,M.darkStone,0,.13,0,group,10);
@@ -951,7 +968,7 @@ function makeTerrain(){
  const marker=new THREE.Group(); scene.add(marker);
  cyl(.13,.13,3.2,M.gold,0,1.6,0,marker,8);
  const halo=add(new THREE.TorusGeometry(1.5,.09,8,32),M.gold,0,.12,0,marker);
- halo.rotation.x=Math.PI/2; marker.position.set(8,0,-176);
+ halo.rotation.x=Math.PI/2; marker.position.set(0,0,-177);
  marker.userData.halo=halo;
  }
 
@@ -964,35 +981,35 @@ async function loadDetailedModels(){
  const repoBase='https://raw.githubusercontent.com/cem2881/ancient-egypt-explorer/main/';
  const templeBase='https://raw.githubusercontent.com/anishthite/cc0-models-Polygonal-Mind/main/projects/tomb-chaser-1/';
  const assets=[
- {url:repoBase+'mud-brick-desert-house.glb',x:-56,z:-24,size:14},
- {url:repoBase+'desert-bazaar-stall.glb',x:18,z:18,size:11},
- {url:repoBase+'desert-city-gate.glb',x:0,z:-58,size:24},
- {url:repoBase+'desert-animals-set.glb',x:57,z:30,size:15},
+ {url:repoBase+'mud-brick-desert-house.glb',x:-46,z:-8,size:14},
+ {url:repoBase+'desert-bazaar-stall.glb',x:19,z:-18,size:11},
+ {url:repoBase+'desert-city-gate.glb',x:0,z:-66,size:24},
+ {url:repoBase+'desert-animals-set.glb',x:67,z:43,size:15},
  {url:repoBase+'desert-camel-caravan.glb',x:-78,z:42,size:22},
- {url:repoBase+'desert-oasis-camp.glb',x:44,z:-44,size:18},
- {url:repoBase+'desert-tomb-entrance.glb',x:-111,z:-211,size:18},
- {url:repoBase+'desert-step-pyramid.glb',x:-151,z:-247,size:40},
- {url:repoBase+'great-sandstone-sphinx.glb',x:-112,z:-183,size:19},
- {url:repoBase+'royal-desert-sarcophagus.glb',x:-128,z:-220,size:7},
- {url:templeBase+'TempleFloor01_Art.glb',x:8,z:-138,size:26},
- {url:templeBase+'TempleFloor02_Art.glb',x:8,z:-111,size:24},
- {url:templeBase+'TempleFloor03_Art.glb',x:34,z:-138,size:24},
- {url:templeBase+'TempleFloor04_Art.glb',x:-18,z:-138,size:24},
- {url:templeBase+'TempleArch01_Art.glb',x:8,z:-158,size:15},
- {url:templeBase+'TempleArch02_Art.glb',x:8,z:-118,size:14},
- {url:templeBase+'Column_Art.glb',x:-10,z:-151,size:12},
- {url:templeBase+'Column_Art.glb',x:26,z:-151,size:12},
- {url:templeBase+'Wall01_Art.glb',x:-7,z:-166,size:17},
- {url:templeBase+'Wall02_Art.glb',x:23,z:-166,size:17},
- {url:templeBase+'Obelisk_Art.glb',x:-31,z:-145,size:14},
- {url:templeBase+'GodAnubis_Art.glb',x:-3,z:-163,size:6.5},
- {url:templeBase+'GodBastet_Art.glb',x:19,z:-163,size:5.8},
- {url:templeBase+'GodRa_Art.glb',x:8,z:-176,size:7.2},
- {url:templeBase+'Torch_Art.glb',x:-1,z:-153,size:5},
- {url:templeBase+'FireTorch01_Art.glb',x:17,z:-153,size:5},
- {url:templeBase+'Jar01_Art.glb',x:-2,z:-130,size:3},
- {url:templeBase+'Jar02_Art.glb',x:18,z:-130,size:3},
- {url:templeBase+'Trap_Art.glb',x:-111,z:-220,size:8}
+ {url:repoBase+'desert-oasis-camp.glb',x:-116,z:93,size:18},
+ {url:repoBase+'desert-tomb-entrance.glb',x:132,z:-225,size:18},
+ {url:repoBase+'desert-step-pyramid.glb',x:168,z:-278,size:44},
+ {url:repoBase+'great-sandstone-sphinx.glb',x:128,z:-193,size:21},
+ {url:repoBase+'royal-desert-sarcophagus.glb',x:148,z:-237,size:7},
+ {url:templeBase+'TempleFloor01_Art.glb',x:-8,z:-190,size:26},
+ {url:templeBase+'TempleFloor02_Art.glb',x:8,z:-214,size:24},
+ {url:templeBase+'TempleFloor03_Art.glb',x:20,z:-190,size:24},
+ {url:templeBase+'TempleFloor04_Art.glb',x:-24,z:-190,size:24},
+ {url:templeBase+'TempleArch01_Art.glb',x:0,z:-177,size:15},
+ {url:templeBase+'TempleArch02_Art.glb',x:0,z:-225,size:14},
+ {url:templeBase+'Column_Art.glb',x:-19,z:-180,size:12},
+ {url:templeBase+'Column_Art.glb',x:19,z:-180,size:12},
+ {url:templeBase+'Wall01_Art.glb',x:-23,z:-207,size:17},
+ {url:templeBase+'Wall02_Art.glb',x:23,z:-207,size:17},
+ {url:templeBase+'Obelisk_Art.glb',x:-31,z:-184,size:14},
+ {url:templeBase+'GodAnubis_Art.glb',x:-9,z:-199,size:6.5},
+ {url:templeBase+'GodBastet_Art.glb',x:13,z:-199,size:5.8},
+ {url:templeBase+'GodRa_Art.glb',x:2,z:-218,size:7.2},
+ {url:templeBase+'Torch_Art.glb',x:-13,z:-183,size:5},
+ {url:templeBase+'FireTorch01_Art.glb',x:13,z:-183,size:5},
+ {url:templeBase+'Jar01_Art.glb',x:-16,z:-223,size:3},
+ {url:templeBase+'Jar02_Art.glb',x:16,z:-223,size:3},
+ {url:templeBase+'Trap_Art.glb',x:132,z:-235,size:8}
  ];
  let loaded=0,failed=0,nextIndex=0;
  async function worker(){
@@ -1080,7 +1097,7 @@ async function loadDetailedModels(){
  } else toast(`Kutsal eser bulundu — ${found}/6`);
  return;
  }
- if(found===6 && player.position.distanceTo(new THREE.Vector3(8,0,-176))<13){
+ if(found===6 && player.position.distanceTo(new THREE.Vector3(0,0,-177))<13){
  gameWon=true;
  $('missionLabel').textContent='GÖREV TAMAMLANDI';
  $('mission').textContent='Medjay kayıp eserleri korudu. Mısır’ın sırları yeniden güvende.';
