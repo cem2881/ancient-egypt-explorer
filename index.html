@@ -1003,7 +1003,10 @@ async function loadDetailedModels(){
    while(nextIndex<assets.length){
      const i=nextIndex++,item=assets[i];
      try{
-       const gltf=await loader.loadAsync(item.url);
+       const gltf=await Promise.race([
+         loader.loadAsync(item.url),
+         new Promise((_,reject)=>setTimeout(()=>reject(new Error('Model zaman aşımına uğradı')),12000))
+       ]);
        const model=gltf.scene;
        model.updateMatrixWorld(true);
        let bounds=new THREE.Box3().setFromObject(model);
@@ -1350,11 +1353,18 @@ async function loadDetailedModels(){
     clock=new THREE.Clock();
     createWorld();
     resize(); controls(); animate();
+    const startupFallback=setTimeout(()=>{
+      if(loading&&loading.isConnected){
+        loadText.textContent='Dünya açılıyor; kalan modeller arka planda yükleniyor…';
+        showGame();
+      }
+    },35000);
     loadDetailedModels().then(loaded=>{
+      clearTimeout(startupFallback);
       loadText.textContent=loaded+' ayrıntılı model yüklendi.';
       showGame();
       if(loaded===0)toast('Ek modeller yüklenemedi; temel dünya açık.');
-    }).catch(err=>{console.error(err);showGame();toast('Ek modeller yüklenemedi; temel oyun çalışıyor.')});
+    }).catch(err=>{clearTimeout(startupFallback);console.error(err);showGame();toast('Ek modeller yüklenemedi; temel oyun çalışıyor.')});
     addEventListener('resize',resize);
     addEventListener('orientationchange',()=>setTimeout(resize,220));
     if(window.visualViewport) visualViewport.addEventListener('resize',resize);
