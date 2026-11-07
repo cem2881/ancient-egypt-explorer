@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#19150f">
-<title>MEDJAY 5.2 — Nil Vadisi Keşfi</title>
+<title>MEDJAY 5.3 — Vadiler ve Kraliyet Platosu</title>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 <style>
 :root{--gold:#edcc83;--glass:rgba(16,19,20,.82);--edge:rgba(237,204,131,.48)}
@@ -50,7 +50,7 @@ button:active,button.active{filter:brightness(1.35);transform:translateY(2px) sc
 <div id="game"></div>
 <div id="rotate">MEDJAY'i oynamak için telefonu yatay çevir.</div>
 <div id="hud">
- <div class="brand">MEDJAY<small>ANTİK MISIR KEŞFİ · 5.2</small></div>
+ <div class="brand">MEDJAY<small>ANTİK MISIR KEŞFİ · 5.3</small></div>
  <div class="panel"><b id="missionLabel">ANA GÖREV</b><span id="mission">Altı kutsal eseri bul ve Karnak Tapınağı'na ulaş.</span></div>
  <div id="counter">KUTSAL ESERLER &nbsp;<strong><span id="found">0</span> / 6</strong></div>
  <div id="worldStatus" aria-live="polite">GÜNDÜZ</div>
@@ -609,8 +609,8 @@ function startGame(THREE){
  });
  const shallowMat=new THREE.MeshStandardMaterial({color:0x789b83,roughness:.9,side:THREE.DoubleSide});
  const wetMat=new THREE.MeshStandardMaterial({color:0xb39a70,roughness:1,side:THREE.DoubleSide});
- const centerAt=z=>-62+Math.sin(z*.024)*12+Math.sin(z*.008)*6;
- const widthAt=z=>15.5+Math.sin(z*.031)*2.2;
+ const centerAt=z=>-66+Math.sin(z*.024)*21+Math.sin(z*.008)*10+Math.sin(z*.061)*3.5;
+ const widthAt=z=>17+Math.sin(z*.031)*3.2+Math.sin(z*.013)*1.8;
  const samples=[];
  for(let z=142;z>=-350;z-=5.5) samples.push({x:centerAt(z),z});
  function riverRibbon(widthFn, offset, y, material){
@@ -776,9 +776,10 @@ function startGame(THREE){
  }
 
 function terrainHeight(x,z){
- const raw=1.8*Math.sin(x*.022+z*.008)
- +1.15*Math.cos(z*.027-x*.013)
- +.65*Math.sin((x-z)*.045);
+ // Broad, walkable Nile basin with elevated sandstone escarpments and a raised royal plateau.
+ const raw=1.15*Math.sin(x*.022+z*.008)
+ +.78*Math.cos(z*.027-x*.013)
+ +.42*Math.sin((x-z)*.045);
  const zones=[
  [0,-20,78,105],
  [84.7,-196.1,78,78],
@@ -787,20 +788,38 @@ function terrainHeight(x,z){
  [-62,-100,48,285],
  [-132,20,60,135],
  [-119,91,32,32],
- [170,-285,105,92]
+ [170,-285,48,48]
  ];
- let blend=1;
+ let flatten=1;
  for(const [cx,cz,rx,rz] of zones){
- blend=Math.min(blend,THREE.MathUtils.smoothstep(
- Math.hypot((x-cx)/rx,(z-cz)/rz),.88,1.38
- ));
+   flatten=Math.min(flatten,THREE.MathUtils.smoothstep(
+     Math.hypot((x-cx)/rx,(z-cz)/rz),.82,1.42
+   ));
  }
- return raw*blend;
+ const ridge=(d,w,h)=>h*Math.exp(-Math.pow(d/w,2));
+ const westLine=-194+18*Math.sin(z*.018)+8*Math.sin(z*.047);
+ const eastLine=202+19*Math.sin(z*.021+1.2)+7*Math.sin(z*.052);
+ const outside=1-flatten;
+ let relief=0;
+ // Long, broken mountain walls frame the valley instead of a flat rectangular edge.
+ relief+=ridge(x-westLine,35,25)*THREE.MathUtils.smoothstep((142-z)/45,0,1);
+ relief+=ridge(x-eastLine,40,30)*THREE.MathUtils.smoothstep((142-z)/42,0,1);
+ relief+=ridge(z+365,43,25)*THREE.MathUtils.smoothstep((Math.abs(x)-85)/45,0,1);
+ relief+=ridge(Math.hypot((x+230)/1.05,(z+185)/1.25),35,20);
+ relief+=ridge(Math.hypot((x-226)/1.05,(z+70)/1.2),39,22);
+ // The royal necropolis occupies a distinct, gently sloped sandstone plateau.
+ const pyramidDist=Math.hypot((x-170)/92,(z+285)/76);
+ const pyramidPlateau=8*(1-THREE.MathUtils.smoothstep(pyramidDist,.72,1.22));
+ // Low undulating shoulders create natural transitions from the valley to the cliffs.
+ const knolls=(ridge(Math.hypot(x+150,z+35),28,8)
+   +ridge(Math.hypot(x-145,z-5),32,9)
+   +ridge(Math.hypot(x-150,z+235),35,11));
+ return raw*flatten + relief*outside + knolls*outside + pyramidPlateau;
 }
 
 
 function makeTerrain(){
- const segments=144,size=800,half=size/2;
+ const segments=200,size=800,half=size/2;
  const positions=[],colors=[],indices=[];
  const base=new THREE.Color(0xd9bd8a);
  const light=new THREE.Color(0xe4ca99);
