@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#19150f">
-<title>MEDJAY 5.1 — Yaşayan Nil Vadisi</title>
+<title>MEDJAY 5.2 — Nil Vadisi Keşfi</title>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 <style>
 :root{--gold:#edcc83;--glass:rgba(16,19,20,.82);--edge:rgba(237,204,131,.48)}
@@ -50,7 +50,7 @@ button:active,button.active{filter:brightness(1.35);transform:translateY(2px) sc
 <div id="game"></div>
 <div id="rotate">MEDJAY'i oynamak için telefonu yatay çevir.</div>
 <div id="hud">
- <div class="brand">MEDJAY<small>ANTİK MISIR KEŞFİ · 5.1</small></div>
+ <div class="brand">MEDJAY<small>ANTİK MISIR KEŞFİ · 5.2</small></div>
  <div class="panel"><b id="missionLabel">ANA GÖREV</b><span id="mission">Altı kutsal eseri bul ve Karnak Tapınağı'na ulaş.</span></div>
  <div id="counter">KUTSAL ESERLER &nbsp;<strong><span id="found">0</span> / 6</strong></div>
  <div id="worldStatus" aria-live="polite">GÜNDÜZ</div>
@@ -87,7 +87,7 @@ import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js')
 function startGame(THREE){
  const root = $('game');
  let renderer, scene, camera, clock, player;
- let yaw = -.575, pitch = .16, joy = {x:0,y:0}, running = false;
+ let yaw = .38, pitch = .19, joy = {x:0,y:0}, running = false;
  let moveVelocity = new THREE.Vector3(), gaitPhase = 0, cameraShake = 0;
  let jumpVelocity = 0, grounded = true, lookPointer = null;
  let found = 0, gameWon = false, scouting = false;
@@ -636,16 +636,16 @@ function startGame(THREE){
  const mesh=new THREE.Mesh(geo,material);mesh.receiveShadow=true;scene.add(mesh);return mesh;
  }
  // Soft muddy shallows and wet sand frame both banks, with a broad blue-green channel.
- riverRibbon(z=>widthAt(z)+5,0,-.105,wetMat);
- riverRibbon(z=>widthAt(z)+2.3,0,-.065,shallowMat);
- riverRibbon(z=>widthAt(z),0,-.018,waterMat);
+ riverRibbon(z=>widthAt(z)+5,0,.035,wetMat);
+ riverRibbon(z=>widthAt(z)+2.3,0,.085,shallowMat);
+ riverRibbon(z=>widthAt(z),0,.16,waterMat);
  // Long subtle current highlights make the river read as moving water at a distance.
  const glintMat=new THREE.MeshBasicMaterial({color:0x9bd4d2,transparent:true,opacity:.22,side:THREE.DoubleSide});
  for(let strand=0;strand<3;strand++){
  const pts=[];
  for(let i=5;i<samples.length-5;i+=3){
  const q=samples[i],z=q.z;
- pts.push(new THREE.Vector3(q.x+(strand-1)*widthAt(z)*.34,.012,q.z));
+ pts.push(new THREE.Vector3(q.x+(strand-1)*widthAt(z)*.34,.205,q.z));
  }
  const curve=new THREE.CatmullRomCurve3(pts);
  const line=new THREE.Mesh(new THREE.TubeGeometry(curve,Math.max(30,pts.length*2),.035,5,false),glintMat);
@@ -975,7 +975,7 @@ function makeTerrain(){
  });
 
 
- player=makeMedjay(); player.position.set(0,terrainHeight(0,13),13); player.rotation.y=AVENUE_YAW; scene.add(player);
+ player=makeMedjay(); player.position.set(-8,terrainHeight(-8,13),13); player.rotation.y=yaw; scene.add(player);
  createSandstormParticles();
  // Original articulated falcon companion: body, tail, head and animated hinged wings.
  scoutBird=new THREE.Group();
@@ -1049,7 +1049,32 @@ async function loadDetailedModels(){
  {url:templeBase+'FireTorch01_Art.glb',x:13,z:-183,size:5},
  {url:templeBase+'Jar01_Art.glb',x:-16,z:-223,size:3},
  {url:templeBase+'Jar02_Art.glb',x:16,z:-223,size:3},
- {url:templeBase+'Trap_Art.glb',x:132,z:-235,size:8}
+ {url:templeBase+'Trap_Art.glb',x:132,z:-235,size:8},
+ // Additional Egyptian architecture and exploration props already stored in this repository.
+ {url:repoBase+'pharaoh-colossi-gate.glb',x:72,z:-174,size:34},
+ {url:repoBase+'desert-temple-hall.glb',x:96,z:-213,size:38},
+ {url:repoBase+'desert-obelisk-set.glb',x:112,z:-177,size:20},
+ {url:repoBase+'sandstone-ruin-kit.glb',x:130,z:-232,size:32},
+ {url:repoBase+'desert-tomb-terrain-kit.glb',x:184,z:-286,size:48},
+ {url:repoBase+'desert-treasure-vault.glb',x:156,z:-247,size:15},
+ {url:repoBase+'tomb-trap-corridor.glb',x:146,z:-270,size:24},
+ {url:repoBase+'desert-dig-site.glb',x:111,z:-250,size:19},
+ {url:repoBase+'desert-well.glb',x:57,z:14,size:8},
+ {url:repoBase+'desert-tent-camp.glb',x:-88,z:-12,size:23},
+ {url:repoBase+'desert-throne-room.glb',x:36,z:-78,size:25},
+ {url:repoBase+'buried-reed-boat.glb',x:-83,z:63,size:11},
+ {url:repoBase+'desert-relics-set.glb',x:-31,z:-65,size:11},
+ // CC0 Egyptian environment details from ToxSam / Polygonal Mind's Tomb Chaser collection.
+ {url:'https://raw.githubusercontent.com/anishthite/cc0-models-Polygonal-Mind/main/projects/tomb-chaser-1/PalmTree_Art.glb',x:-91,z:116,size:9},
+ {url:'https://raw.githubusercontent.com/anishthite/cc0-models-Polygonal-Mind/main/projects/tomb-chaser-1/PalmTree_Art.glb',x:-103,z:8,size:9},
+ {url:'https://raw.githubusercontent.com/anishthite/cc0-models-Polygonal-Mind/main/projects/tomb-chaser-1/PalmTree_Art.glb',x:-92,z:-111,size:9},
+ {url:templeBase+'TempleEmbelisher01_Art.glb',x:-15,z:-195,size:8},
+ {url:templeBase+'TempleEmbelisher02_Art.glb',x:15,z:-195,size:8},
+ {url:templeBase+'TempleEmbelisher03_Art.glb',x:0,z:-210,size:8},
+ {url:templeBase+'Door_Art.glb',x:0,z:-226,size:13},
+ {url:templeBase+'FireTorch02_Art.glb',x:-20,z:-205,size:4},
+ {url:templeBase+'FireTorch03_Art.glb',x:20,z:-205,size:4},
+ {url:templeBase+'InteriorEmbelisher01_Art.glb',x:-8,z:-213,size:7}
  ];
  // Convert the temple kit's local layout into the eastern temple precinct; rotate its front toward the village.
  for(const item of assets){
@@ -1105,7 +1130,8 @@ async function loadDetailedModels(){
      loadFill.style.width=((loaded+failed)/assets.length*100)+'%';
    }
  }
- await Promise.all(Array.from({length:Math.min(4,assets.length)},()=>worker()));
+ const mobileMode=window.matchMedia?.('(max-width: 900px)').matches || (navigator.hardwareConcurrency||4)<=4;
+ await Promise.all(Array.from({length:Math.min(mobileMode?2:3,assets.length)},()=>worker()));
  if(failed)console.warn(`${failed} / ${assets.length} GLB modeli yüklenemedi.`);
  if(loaded)toast(`${loaded} / ${assets.length} 3D model yüklendi${failed?` · ${failed} model atlandı`:''}.`);
  else toast('3D modeller yüklenemedi; temel dünya açık.');
